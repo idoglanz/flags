@@ -374,14 +374,21 @@
 (() => {
   "use strict";
 
+  // All ~195 sovereign countries (193 UN members + Vatican + Palestine), ISO 3166-1 alpha-2.
   const CODES = [
-    "US","CA","MX","BR","AR","CL","CO","PE","JM","CU",
-    "GB","FR","DE","IT","ES","PT","NL","BE","CH","SE",
-    "NO","DK","FI","IE","GR","PL","AT","UA","RU",
-    "IL","EG","TR","SA","AE","MA",
-    "ZA","KE","NG","ET",
-    "CN","JP","KR","IN","TH","VN","ID","PH",
-    "AU","NZ"
+    "AF","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB","BY",
+    "BE","BZ","BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH","CM","CA",
+    "CF","TD","CL","CN","CO","KM","CG","CD","CR","CI","HR","CU","CY","CZ","DK","DJ",
+    "DM","DO","EC","EG","SV","GQ","ER","EE","SZ","ET","FJ","FI","FR","GA","GM","GE",
+    "DE","GH","GR","GD","GT","GN","GW","GY","HT","HN","HU","IS","IN","ID","IR","IQ",
+    "IE","IL","IT","JM","JP","JO","KZ","KE","KI","KP","KR","KW","KG","LA","LV","LB",
+    "LS","LR","LY","LI","LT","LU","MG","MW","MY","MV","ML","MT","MH","MR","MU","MX",
+    "FM","MD","MC","MN","ME","MA","MZ","MM","NA","NR","NP","NL","NZ","NI","NE","NG",
+    "MK","NO","OM","PK","PW","PS","PA","PG","PY","PE","PH","PL","PT","QA","RO","RU",
+    "RW","KN","LC","VC","WS","SM","ST","SA","SN","RS","SC","SL","SG","SK","SI","SB",
+    "SO","ZA","SS","ES","LK","SD","SR","SE","CH","SY","TJ","TZ","TH","TL","TG","TO",
+    "TT","TN","TR","TM","TV","UG","UA","AE","GB","US","UY","UZ","VU","VA","VE","VN",
+    "YE","ZM","ZW"
   ];
   const enNames = new Intl.DisplayNames(["en"], { type: "region" });
   const heNames = new Intl.DisplayNames(["he"], { type: "region" });
@@ -389,7 +396,8 @@
     code, en: enNames.of(code), he: heNames.of(code),
     flag: `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
     flag2x: `https://flagcdn.com/w1280/${code.toLowerCase()}.png`
-  })).filter(c => c.en && c.en !== c.code);
+  })).filter(c => c.en && c.he && c.en !== c.code && c.he !== c.code)
+     .sort((a, b) => a.en.localeCompare(b.en)); // alphabetical for tidy Learn browsing
 
   // ---------- Speech ----------
   const synth = window.speechSynthesis;
