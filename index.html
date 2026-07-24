@@ -528,11 +528,11 @@
     if (idx === answer) {
       btn.classList.add("correct"); score++; streak++;
       feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + c.en;
-      feedbackEl.className = "feedback good pop"; speak(c.en, "en-US"); celebrate();
+      feedbackEl.className = "feedback good pop"; speak(c.he, "he-IL"); celebrate();
     } else {
       btn.classList.add("wrong");
       [...choicesEl.children].find(b => +b.dataset.idx === answer)?.classList.add("correct");
-      streak = 0; feedbackEl.textContent = "It's " + c.en + " · " + c.he; feedbackEl.className = "feedback bad"; speak(c.en, "en-US");
+      streak = 0; feedbackEl.textContent = "It's " + c.en + " · " + c.he; feedbackEl.className = "feedback bad"; speak(c.he, "he-IL");
     }
     scoreEl.textContent = score; streakEl.textContent = streak; quizNext.style.display = "";
   }
