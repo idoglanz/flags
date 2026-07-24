@@ -216,6 +216,14 @@
   .feedback.good { color: var(--teal-dk); }
   .feedback.bad  { color: var(--coral-dk); }
   .feedback.hintline { color: var(--ink-soft); font-family: "Nunito"; font-weight: 800; font-size: .82rem; opacity: .9; }
+  .feedback.pop { animation: fbPop .55s cubic-bezier(.2,.9,.3,1.6); }
+  @keyframes fbPop { 0%{ transform: scale(.5); opacity: 0;} 55%{ transform: scale(1.18);} 100%{ transform: scale(1); opacity: 1;} }
+
+  /* tappable single flag (Play) — reset button chrome, keep the mat look */
+  .flag-wrap.tappable { border: 0; font: inherit; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  .flag-wrap.tappable:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
+  .flag-wrap.qspeaking { animation: qflagSpeak .5s ease; }
+  @keyframes qflagSpeak { 0%,100%{ transform: rotate(-1.3deg) scale(1);} 50%{ transform: rotate(-1.3deg) scale(1.04);} }
 
   /* ---------- Match (sports) ---------- */
   .scoreboard { display: flex; align-items: center; justify-content: center; gap: 14px; flex: 0 0 auto; margin-bottom: 12px;
@@ -352,7 +360,7 @@
       </div>
       <div class="card">
         <div class="quiz-q">Which country is this?<small>איזו מדינה זו?</small></div>
-        <div class="flag-wrap"><img id="quizFlag" alt="mystery flag" /></div>
+        <button type="button" class="flag-wrap tappable" id="quizWrap" title="Tap to hear it in Hebrew" aria-label="Hear the country's name in Hebrew"><img id="quizFlag" alt="mystery flag" /><span class="flag-spk"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></button>
         <div class="choices" id="choices"></div>
         <div class="feedback" id="feedback"></div>
         <div class="controls"><button class="btn primary" id="quizNext" style="display:none;">Next flag ➡️</button></div>
@@ -488,7 +496,13 @@
 
   // ---------- Play ----------
   const quizFlag = document.getElementById("quizFlag"), choicesEl = document.getElementById("choices");
+  const quizWrap = document.getElementById("quizWrap");
   const feedbackEl = document.getElementById("feedback"), quizNext = document.getElementById("quizNext");
+  quizWrap.onclick = () => {
+    if (answer == null) return;
+    quizWrap.classList.remove("qspeaking"); void quizWrap.offsetWidth; quizWrap.classList.add("qspeaking");
+    speak(COUNTRIES[answer].he, "he-IL");
+  };
   const scoreEl = document.getElementById("score"), streakEl = document.getElementById("streak");
   let score = 0, streak = 0, answer = null, locked = false;
   const CHEERS = ["🎉 Yay!", "🌟 Awesome!", "👏 Great job!", "🥳 Correct!", "🚀 Nailed it!"];
@@ -514,7 +528,7 @@
     if (idx === answer) {
       btn.classList.add("correct"); score++; streak++;
       feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + c.en;
-      feedbackEl.className = "feedback good"; speak(c.en, "en-US"); burst();
+      feedbackEl.className = "feedback good pop"; speak(c.en, "en-US"); celebrate();
     } else {
       btn.classList.add("wrong");
       [...choicesEl.children].find(b => +b.dataset.idx === answer)?.classList.add("correct");
@@ -636,19 +650,62 @@
   const resize = () => { cv.width = innerWidth; cv.height = innerHeight; };
   resize(); addEventListener("resize", resize);
   const COLORS = ["#ffc531","#ff8a3d","#ff5d6c","#10b3a3","#47c2ec","#8a63d2"];
-  function burst() {
+  const EMOJI = ["🎉","🎊","⭐","🌟","🥳"];
+  function spawn(cx, cy, n, withEmoji) {
+    for (let i=0;i<n;i++) {
+      const isE = withEmoji && Math.random() < 0.22;
+      parts.push({ x:cx, y:cy, vx:(Math.random()-.5)*(withEmoji?19:16), vy:(Math.random()-1)*16-3,
+        g:.34+Math.random()*.22, r: isE ? 20+Math.random()*12 : 5+Math.random()*8,
+        c:COLORS[(Math.random()*COLORS.length)|0], emoji: isE ? EMOJI[(Math.random()*EMOJI.length)|0] : null,
+        rot:Math.random()*6, vr:(Math.random()-.5)*.5, life: withEmoji ? 120+Math.random()*30 : 100 });
+    }
+  }
+  function burst() {                       // normal burst (Match)
     const running = parts.length > 0;
-    const cx = innerWidth/2, cy = innerHeight*0.42;
-    for (let i=0;i<110;i++) parts.push({ x:cx, y:cy, vx:(Math.random()-.5)*16, vy:(Math.random()-1)*15-3,
-      g:.34+Math.random()*.22, r:5+Math.random()*8, c:COLORS[(Math.random()*COLORS.length)|0], rot:Math.random()*6, vr:(Math.random()-.5)*.5, life:100 });
+    spawn(innerWidth/2, innerHeight*0.42, 110, false);
     if (!running) requestAnimationFrame(tick);
+  }
+  function celebrate() {                    // BIG celebration + fanfare (Play)
+    const running = parts.length > 0;
+    spawn(innerWidth*0.50, innerHeight*0.38, 100, true);
+    spawn(innerWidth*0.16, innerHeight*0.52, 55, true);
+    spawn(innerWidth*0.84, innerHeight*0.52, 55, true);
+    if (!running) requestAnimationFrame(tick);
+    fanfare();
   }
   function tick() {
     ctx.clearRect(0,0,cv.width,cv.height);
-    parts = parts.filter(p => p.life-- > 0 && p.y < cv.height+50);
+    parts = parts.filter(p => p.life-- > 0 && p.y < cv.height+60);
     parts.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.rot+=p.vr;
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.62); ctx.restore(); });
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      if (p.emoji) { ctx.font = p.r+"px serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(p.emoji,0,0); }
+      else { ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.62); }
+      ctx.restore(); });
     if (parts.length) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height);
+  }
+
+  // ---------- Celebration sound (Web Audio, no files, offline-safe) ----------
+  let audioCtx = null;
+  function fanfare() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      audioCtx = audioCtx || new AC();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const tone = (freq, t, dur, type, vol) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + dur + 0.02);
+      };
+      const arp = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+      arp.forEach((f, i) => tone(f, now + i * 0.085, 0.45, "triangle", 0.28));
+      const t2 = now + arp.length * 0.085;           // sparkle chord to finish
+      tone(1046.50, t2, 0.6, "sine", 0.22);
+      tone(1318.51, t2, 0.6, "sine", 0.18);
+    } catch (e) {}
   }
 
   renderLearn(false);
