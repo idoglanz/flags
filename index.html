@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#ffb03a" />
+<title>Flags of the World · דגלי העולם</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    /* ---- Sunshine sticker-book palette ---- */
+    --paper:      #fff3df;
+    --paper-deep: #ffe7c2;
+    --ink:        #3a2b52;
+    --ink-soft:   #8a7ba3;
+    --coral:      #ff5d6c;
+    --coral-dk:   #e03e56;
+    --tang:       #ff8a3d;
+    --sun:        #ffc531;
+    --sun-dk:     #e9a800;
+    --teal:       #10b3a3;
+    --teal-dk:    #0a8a7f;
+    --sky:        #47c2ec;
+    --mat:        #fbfcff;
+
+    --card-shadow: 0 22px 44px -18px rgba(58,43,82,.5), 0 6px 14px -8px rgba(58,43,82,.3);
+    --radius: 30px;
+    font-size: clamp(16px, 2.5vw, 21px);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    font-weight: 800;
+    color: var(--ink);
+    background: var(--paper);
+    min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: clamp(14px, 3vw, 30px);
+    padding-bottom: max(clamp(14px, 3vw, 30px), env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ---- Atmospheric background: sun glow + dot grid + grain ---- */
+  .bg { position: fixed; inset: 0; z-index: -3; overflow: hidden; }
+  .bg::before {            /* warm sun glow, top-right */
+    content: ""; position: absolute; top: -22vmax; right: -14vmax;
+    width: 60vmax; height: 60vmax; border-radius: 50%;
+    background: radial-gradient(circle at center,
+      rgba(255,197,49,.9), rgba(255,138,61,.35) 45%, transparent 68%);
+    filter: blur(2px);
+  }
+  .bg::after {             /* cool glow, bottom-left */
+    content: ""; position: absolute; bottom: -24vmax; left: -16vmax;
+    width: 54vmax; height: 54vmax; border-radius: 50%;
+    background: radial-gradient(circle at center,
+      rgba(71,194,236,.5), rgba(16,179,163,.22) 48%, transparent 70%);
+  }
+  .dots {                  /* faint dotted paper texture */
+    position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background-image: radial-gradient(rgba(58,43,82,.09) 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
+            mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
+  }
+  .grain {                 /* subtle grain overlay */
+    position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
+  }
+  /* floating travel doodles */
+  .doodle { position: fixed; z-index: -1; font-size: 2.4rem; opacity: .5; filter: saturate(.9); animation: float 7s ease-in-out infinite; }
+  .doodle.d1 { top: 14%; left: 6%;  animation-delay: -1s; }
+  .doodle.d2 { top: 22%; right: 8%; animation-delay: -3s; font-size: 2rem;}
+  .doodle.d3 { bottom: 14%; left: 10%; animation-delay: -2s; font-size: 1.8rem;}
+  .doodle.d4 { bottom: 20%; right: 7%; animation-delay: -4.5s; }
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(-4deg);} 50%{transform:translateY(-16px) rotate(5deg);} }
+  @media (max-width: 620px){ .doodle { display: none; } }
+
+  h1 { margin: 0; }
+
+  /* ---------- Header ---------- */
+  .top {
+    width: 100%; max-width: 760px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; margin-bottom: clamp(8px, 2vh, 20px);
+    animation: drop .6s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .globe { font-size: 2.4rem; animation: spin 14s linear infinite; transform-origin: 50% 55%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .brand-txt { font-family: "Fredoka", sans-serif; line-height: .98; }
+  .brand-txt b { font-size: 1.5rem; font-weight: 700; letter-spacing: .3px; display: block;
+    color: var(--ink); text-shadow: 2px 2px 0 rgba(255,197,49,.55); }
+  .brand-txt span { font-size: .82rem; color: var(--ink-soft); font-family: "Nunito"; font-weight: 800; }
+
+  .modes {
+    display: flex; gap: 6px; padding: 6px;
+    background: #fff; border-radius: 999px;
+    box-shadow: 0 5px 0 var(--paper-deep), 0 12px 22px -12px rgba(58,43,82,.4);
+  }
+  .modes button {
+    border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: .95rem;
+    padding: 11px 20px; border-radius: 999px; color: var(--ink-soft);
+    background: transparent; transition: transform .14s, color .14s, background .14s;
+    display: inline-flex; align-items: center; gap: .4em;
+  }
+  .modes button.active { color: #fff; background: linear-gradient(180deg, var(--coral), var(--coral-dk)); box-shadow: 0 4px 0 var(--coral-dk); }
+  .modes button:not(.active):hover { color: var(--ink); background: var(--paper); }
+  .modes button:active { transform: scale(.93); }
+
+  /* ---------- Stage ---------- */
+  .stage {
+    flex: 1; width: 100%; max-width: 760px;
+    display: flex; align-items: center; justify-content: center;
+    padding: clamp(8px, 2vh, 22px) 0;
+  }
+  .screen { width: 100%; display: none; }
+  .screen.show { display: block; animation: pop .45s cubic-bezier(.2,.9,.3,1.35); }
+  @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(14px);} to { opacity: 1; transform: none; } }
+  @keyframes drop { from { opacity: 0; transform: translateY(-16px);} to { opacity: 1; transform: none; } }
+
+  .card {
+    position: relative;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    padding: clamp(20px, 4vw, 38px) clamp(18px, 4vw, 40px) clamp(22px, 4vw, 34px);
+    text-align: center;
+    border: 3px solid #fff;
+  }
+  /* washi-tape accent at the top of the card */
+  .card::before {
+    content: ""; position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(-2.5deg);
+    width: 128px; height: 30px; border-radius: 4px;
+    background: repeating-linear-gradient(45deg, rgba(255,138,61,.85) 0 10px, rgba(255,197,49,.85) 10px 20px);
+    box-shadow: 0 3px 8px rgba(58,43,82,.18);
+    opacity: .92;
+  }
+
+  /* ---------- Names ---------- */
+  .names { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
+  .name {
+    display: inline-flex; align-items: center; gap: .45em; cursor: pointer;
+    border: 0; background: transparent; font: inherit; color: inherit;
+    padding: 6px 18px; border-radius: 18px; max-width: 100%;
+    transition: transform .14s, background .16s, box-shadow .16s;
+  }
+  .name:hover { background: #fff5e2; }
+  .name:active { transform: scale(.95); }
+  .name .txt { font-family: "Fredoka", sans-serif; font-weight: 600; }
+  .name-en .txt { font-size: clamp(1.7rem, 6.5vw, 2.7rem); color: var(--ink); }
+  .name-he { direction: rtl; }
+  .name-he .txt { font-size: clamp(1.45rem, 5.6vw, 2.15rem); color: var(--teal-dk); }
+
+  /* animated speaker icon */
+  .spk { width: 1.15em; height: 1.15em; flex: 0 0 auto; color: var(--tang); opacity: .65; transition: opacity .15s, transform .15s; }
+  .name:hover .spk { opacity: 1; transform: scale(1.08); }
+  .spk .wave { transform-origin: 6px 12px; }
+  .name.speaking { background: #fff2cf; }
+  .name.speaking .spk { color: var(--coral); opacity: 1; }
+  .name.speaking .w1 { animation: pulse .7s ease-in-out infinite; }
+  .name.speaking .w2 { animation: pulse .7s ease-in-out .18s infinite; }
+  @keyframes pulse { 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+
+  /* ---------- Flag (shown WHOLE on a photo-mat) ---------- */
+  .flag-wrap {
+    position: relative; margin: clamp(16px, 3vh, 26px) auto clamp(10px,2vh,16px);
+    width: min(80vw, 460px); aspect-ratio: 3 / 2;
+    background: var(--mat); border-radius: 20px; padding: 14px;
+    box-shadow: inset 0 0 0 2px rgba(58,43,82,.06), 0 14px 26px -14px rgba(58,43,82,.45);
+    transform: rotate(-1.3deg); transition: transform .3s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .flag-wrap:hover { transform: rotate(0deg) scale(1.02); }
+  .flag-wrap img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+    border-radius: 8px; box-shadow: 0 3px 10px rgba(58,43,82,.22), 0 0 0 1px rgba(58,43,82,.1);
+    background:#fff;
+  }
+  .flag-swap { animation: swap .5s cubic-bezier(.2,.9,.3,1.3); }
+  @keyframes swap { 0%{ opacity:0; transform: rotate(-1.3deg) translateY(18px) scale(.94);} 100%{ opacity:1; } }
+
+  .hint { color: var(--ink-soft); font-weight: 800; font-size: .8rem; margin: 2px 0 clamp(14px,2vh,20px); }
+
+  /* ---------- Controls ---------- */
+  .controls { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    border: 0; cursor: pointer; font: inherit; font-weight: 900; font-size: 1rem;
+    border-radius: 20px; padding: 15px 24px; color: #fff;
+    display: inline-flex; align-items: center; gap: .5em;
+    transition: transform .09s, box-shadow .09s, filter .15s;
+  }
+  .btn:active { transform: translateY(5px); }
+  .btn.primary { background: linear-gradient(180deg, var(--sun), var(--sun-dk)); color: var(--ink);
+    font-family:"Fredoka"; font-size: 1.25rem; padding: 16px 34px; box-shadow: 0 7px 0 var(--sun-dk); }
+  .btn.primary:active { box-shadow: 0 2px 0 var(--sun-dk); }
+  .btn.teal { background: linear-gradient(180deg, var(--teal), var(--teal-dk)); box-shadow: 0 6px 0 var(--teal-dk); }
+  .btn.teal:active { box-shadow: 0 1px 0 var(--teal-dk); }
+  .btn.ghost { background:#fff; color: var(--ink); box-shadow: 0 6px 0 var(--paper-deep); }
+  .btn.ghost:active { box-shadow: 0 1px 0 var(--paper-deep); }
+  .btn:disabled { opacity: .4; cursor: default; box-shadow: none !important; transform: none; }
+  .btn:not(:disabled):hover { filter: brightness(1.04); }
+
+  .counter {
+    display: inline-flex; align-items:center; gap:.4em;
+    margin-top: clamp(14px,2vh,18px); padding: 7px 16px; border-radius: 999px;
+    background: var(--paper); color: var(--ink-soft); font-weight: 900; font-size: .82rem;
+  }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 520px) {
+    :root { --radius: 24px; }
+    .top { margin-bottom: 4px; gap: 10px; }
+    .globe { font-size: 1.9rem; }
+    .brand-txt b { font-size: 1.15rem; text-shadow: 1.5px 1.5px 0 rgba(255,197,49,.55); }
+    .brand-txt span { font-size: .68rem; }
+    .modes button { padding: 10px 15px; font-size: .82rem; }
+    .card { padding: 26px 16px 20px; }
+    /* tidy the control buttons: two equal on top, Next full-width below */
+    .controls { gap: 10px; }
+    .controls .btn { flex: 1 1 0; justify-content: center; }
+    .controls .btn.primary { flex: 1 1 100%; }
+  }
+
+  /* ---------- Quiz ---------- */
+  .scorebar { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; animation: drop .5s both; }
+  .stat {
+    display:inline-flex; align-items:center; gap:.45em; background:#fff;
+    padding: 9px 18px; border-radius: 999px; font-weight: 900; color: var(--ink);
+    box-shadow: 0 5px 0 var(--paper-deep);
+  }
+  .stat b { font-family:"Fredoka"; font-size: 1.3em; line-height: 1; }
+  .stat.streak b { color: var(--coral); }
+  .stat.score b { color: var(--tang); }
+
+  .quiz-q { font-family:"Fredoka"; font-weight: 600; font-size: 1.35rem; margin: 2px 0 0; }
+  .quiz-q small { display:block; color: var(--ink-soft); font-size: .82rem; font-family:"Nunito"; font-weight:800; direction: rtl; }
+
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 4px; }
+  @media (max-width: 480px){ .choices { grid-template-columns: 1fr; } }
+  .choice {
+    border: 0; cursor: pointer; font: inherit; font-weight: 800; text-align: center;
+    background: #fff; color: var(--ink); border-radius: 20px; padding: 15px 12px;
+    box-shadow: 0 6px 0 var(--paper-deep); line-height: 1.15;
+    transition: transform .09s, box-shadow .12s, background .18s;
+  }
+  .choice .en { font-family:"Fredoka"; font-weight: 600; font-size: 1.12rem; }
+  .choice .he { display:block; color: var(--ink-soft); font-size: .92rem; direction: rtl; margin-top: 2px; font-weight: 800; }
+  .choice:not([disabled]):hover { transform: translateY(-2px); background:#fffaf0; }
+  .choice:not([disabled]):active { transform: translateY(4px); box-shadow: 0 2px 0 var(--paper-deep); }
+  .choice.correct { background: linear-gradient(180deg, #2ecf9b, var(--teal-dk)); color:#fff; box-shadow: 0 6px 0 var(--teal-dk); animation: bounceIn .5s; }
+  .choice.correct .he { color: rgba(255,255,255,.92); }
+  .choice.wrong { background: linear-gradient(180deg, var(--coral), var(--coral-dk)); color:#fff; box-shadow: 0 6px 0 var(--coral-dk); animation: shake .4s; }
+  .choice.wrong .he { color: rgba(255,255,255,.92); }
+  @keyframes bounceIn { 0%{transform:scale(.9);} 50%{transform:scale(1.06);} 100%{transform:scale(1);} }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(7px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(5px);} }
+
+  .feedback { min-height: 1.5em; font-family:"Fredoka"; font-weight:600; font-size: 1.2rem; margin-top: 14px; }
+  .feedback.good { color: var(--teal-dk); }
+  .feedback.bad  { color: var(--coral-dk); }
+
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+  .footnote { color: var(--ink-soft); font-size: .72rem; margin: 8px 0 0; text-align:center; font-weight:800; opacity:.85; }
+</style>
+</head>
+<body>
+  <div class="bg"></div><div class="dots"></div><div class="grain"></div>
+  <div class="doodle d1">✈️</div><div class="doodle d2">🧭</div>
+  <div class="doodle d3">⭐</div><div class="doodle d4">☁️</div>
+
+  <header class="top">
+    <div class="brand">
+      <div class="globe">🌍</div>
+      <div class="brand-txt">
+        <b>Flags of the World</b>
+        <span>דגלי העולם · בואו נלמד דגלים</span>
+      </div>
+    </div>
+    <nav class="modes" role="tablist">
+      <button id="tabLearn" class="active" aria-selected="true">📚 Learn</button>
+      <button id="tabPlay" aria-selected="false">🎮 Play</button>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <!-- LEARN -->
+    <section id="learn" class="screen show">
+      <div class="card">
+        <div class="names">
+          <button class="name name-en" id="learnEn">
+            <span class="txt"></span>
+            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/>
+              <path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="name name-he" id="learnHe" dir="rtl">
+            <span class="txt"></span>
+            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/>
+              <path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flag-wrap"><img id="learnFlag" alt="flag" /></div>
+        <div class="hint">👆 Tap a name to hear it · לחצו על שם כדי לשמוע</div>
+
+        <div class="controls">
+          <button class="btn ghost" id="prevBtn">⬅️ Back</button>
+          <button class="btn teal" id="shuffleBtn">🔀 Mix</button>
+          <button class="btn primary" id="nextBtn">Next ➡️</button>
+        </div>
+        <div class="counter"><span id="learnCounter"></span></div>
+      </div>
+    </section>
+
+    <!-- PLAY -->
+    <section id="play" class="screen">
+      <div class="scorebar">
+        <span class="stat score">⭐ Score <b id="score">0</b></span>
+        <span class="stat streak">🔥 Streak <b id="streak">0</b></span>
+      </div>
+      <div class="card">
+        <div class="quiz-q">Which country is this?<small>איזו מדינה זו?</small></div>
+        <div class="flag-wrap"><img id="quizFlag" alt="mystery flag" /></div>
+        <div class="choices" id="choices"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="controls">
+          <button class="btn primary" id="quizNext" style="display:none;">Next flag ➡️</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <p class="footnote" id="voiceNote"></p>
+  <canvas id="confetti"></canvas>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---- Curated kid-friendly set (ISO 3166-1 alpha-2) ----
+  const CODES = [
+    "US","CA","MX","BR","AR","CL","CO","PE","JM","CU",
+    "GB","FR","DE","IT","ES","PT","NL","BE","CH","SE",
+    "NO","DK","FI","IE","GR","PL","AT","UA","RU",
+    "IL","EG","TR","SA","AE","MA",
+    "ZA","KE","NG","ET",
+    "CN","JP","KR","IN","TH","VN","ID","PH",
+    "AU","NZ"
+  ];
+
+  const enNames = new Intl.DisplayNames(["en"], { type: "region" });
+  const heNames = new Intl.DisplayNames(["he"], { type: "region" });
+
+  const COUNTRIES = CODES.map(code => ({
+    code,
+    en: enNames.of(code),
+    he: heNames.of(code),
+    flag:   `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
+    flag2x: `https://flagcdn.com/w1280/${code.toLowerCase()}.png`
+  })).filter(c => c.en && c.en !== c.code);
+
+  // ---------- Speech ----------
+  const synth = window.speechSynthesis;
+  let voices = [], heVoice = null, enVoice = null;
+  function pickVoices() {
+    voices = synth ? synth.getVoices() : [];
+    heVoice = voices.find(v => /^he/i.test(v.lang)) || null;
+    enVoice = voices.find(v => /^en[-_]?(US|GB)/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || null;
+    const note = document.getElementById("voiceNote");
+    if (!synth) note.textContent = "🔇 This browser can't read names aloud.";
+    else if (!heVoice) note.textContent = "ℹ️ No Hebrew voice on this device — Hebrew may use a default voice.";
+    else note.textContent = "";
+  }
+  if (synth) { pickVoices(); synth.onvoiceschanged = pickVoices; }
+
+  let lastBtn = null;
+  function speak(text, lang, btn) {
+    if (!synth || !text) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    const v = lang.startsWith("he") ? heVoice : enVoice;
+    if (v) u.voice = v;
+    u.rate = 0.9; u.pitch = 1.06;
+    if (lastBtn) lastBtn.classList.remove("speaking");
+    if (btn) {
+      btn.classList.add("speaking"); lastBtn = btn;
+      u.onend = u.onerror = () => btn.classList.remove("speaking");
+    }
+    synth.speak(u);
+  }
+
+  const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const swapAnim = img => { img.classList.remove("flag-swap"); void img.offsetWidth; img.classList.add("flag-swap"); };
+
+  // ---------- Learn mode ----------
+  const order = COUNTRIES.map((_, i) => i);
+  let pos = 0;
+  const learnEn = document.getElementById("learnEn");
+  const learnHe = document.getElementById("learnHe");
+  const learnFlag = document.getElementById("learnFlag");
+  const learnCounter = document.getElementById("learnCounter");
+
+  function renderLearn(animate) {
+    const c = COUNTRIES[order[pos]];
+    learnEn.querySelector(".txt").textContent = c.en;
+    learnHe.querySelector(".txt").textContent = c.he;
+    learnFlag.src = c.flag;
+    learnFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`;
+    learnFlag.alt = `Flag of ${c.en}`;
+    learnCounter.textContent = `${pos + 1} / ${COUNTRIES.length}`;
+    document.getElementById("prevBtn").disabled = pos === 0;
+    if (animate) swapAnim(learnFlag);
+  }
+  learnEn.onclick = () => speak(COUNTRIES[order[pos]].en, "en-US", learnEn);
+  learnHe.onclick = () => speak(COUNTRIES[order[pos]].he, "he-IL", learnHe);
+  document.getElementById("nextBtn").onclick = () => { pos = (pos+1)%COUNTRIES.length; renderLearn(true); };
+  document.getElementById("prevBtn").onclick = () => { if (pos>0){ pos--; renderLearn(true); } };
+  document.getElementById("shuffleBtn").onclick = () => { shuffle(order); pos = 0; renderLearn(true); };
+
+  // ---------- Play mode ----------
+  const quizFlag = document.getElementById("quizFlag");
+  const choicesEl = document.getElementById("choices");
+  const feedbackEl = document.getElementById("feedback");
+  const quizNext = document.getElementById("quizNext");
+  const scoreEl = document.getElementById("score");
+  const streakEl = document.getElementById("streak");
+  let score = 0, streak = 0, answer = null, locked = false;
+  const CHEERS = ["🎉 Yay!", "🌟 Awesome!", "👏 Great job!", "🥳 Correct!", "🚀 Nailed it!"];
+
+  function newQuestion() {
+    locked = false;
+    feedbackEl.textContent = ""; feedbackEl.className = "feedback";
+    quizNext.style.display = "none";
+    const pool = shuffle(COUNTRIES.map((_, i) => i));
+    answer = pool[0];
+    const opts = shuffle([answer, ...pool.slice(1, 4)]);
+    const c = COUNTRIES[answer];
+    quizFlag.src = c.flag; quizFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`;
+    quizFlag.alt = "Mystery flag"; swapAnim(quizFlag);
+    choicesEl.innerHTML = "";
+    opts.forEach(idx => {
+      const o = COUNTRIES[idx];
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.dataset.idx = idx;
+      b.innerHTML = `<span class="en">${o.en}</span><span class="he" dir="rtl">${o.he}</span>`;
+      b.onclick = () => choose(idx, b, c);
+      choicesEl.appendChild(b);
+    });
+  }
+
+  function choose(idx, btn, correct) {
+    if (locked) return;
+    locked = true;
+    const buttons = [...choicesEl.children];
+    buttons.forEach(b => b.disabled = true);
+    if (idx === answer) {
+      btn.classList.add("correct");
+      score++; streak++;
+      feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + correct.en;
+      feedbackEl.className = "feedback good";
+      speak(correct.en, "en-US"); burst();
+    } else {
+      btn.classList.add("wrong");
+      buttons.find(b => +b.dataset.idx === answer)?.classList.add("correct");
+      streak = 0;
+      feedbackEl.textContent = "It's " + correct.en + " · " + correct.he;
+      feedbackEl.className = "feedback bad";
+      speak(correct.en, "en-US");
+    }
+    scoreEl.textContent = score; streakEl.textContent = streak;
+    quizNext.style.display = "";
+  }
+  quizNext.onclick = newQuestion;
+
+  // ---------- Tabs ----------
+  const tabLearn = document.getElementById("tabLearn");
+  const tabPlay = document.getElementById("tabPlay");
+  function setMode(mode) {
+    if (synth) synth.cancel();
+    const learning = mode === "learn";
+    tabLearn.classList.toggle("active", learning);
+    tabPlay.classList.toggle("active", !learning);
+    tabLearn.setAttribute("aria-selected", learning);
+    tabPlay.setAttribute("aria-selected", !learning);
+    document.getElementById("learn").classList.toggle("show", learning);
+    document.getElementById("play").classList.toggle("show", !learning);
+    if (!learning && answer === null) newQuestion();
+  }
+  tabLearn.onclick = () => setMode("learn");
+  tabPlay.onclick = () => setMode("play");
+
+  // ---------- Confetti ----------
+  const cv = document.getElementById("confetti"), ctx = cv.getContext("2d");
+  let parts = [];
+  const resize = () => { cv.width = innerWidth; cv.height = innerHeight; };
+  resize(); addEventListener("resize", resize);
+  const COLORS = ["#ffc531","#ff8a3d","#ff5d6c","#10b3a3","#47c2ec","#8a63d2"];
+  function burst() {
+    const cx = innerWidth/2, cy = innerHeight*0.42;
+    for (let i=0;i<120;i++) parts.push({
+      x:cx, y:cy, vx:(Math.random()-.5)*16, vy:(Math.random()-1)*15-3,
+      g:.34+Math.random()*.22, r:5+Math.random()*8, c:COLORS[(Math.random()*COLORS.length)|0],
+      rot:Math.random()*6, vr:(Math.random()-.5)*.5, life:100
+    });
+    requestAnimationFrame(tick);
+  }
+  function tick() {
+    ctx.clearRect(0,0,cv.width,cv.height);
+    parts = parts.filter(p => p.life-- > 0 && p.y < cv.height+50);
+    parts.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.rot+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.62); ctx.restore();
+    });
+    if (parts.length) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height);
+  }
+
+  renderLearn(false);
+})();
+</script>
+</body>
+</html>
