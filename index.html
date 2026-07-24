@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<meta name="theme-color" content="#ffb03a" />
-<title>Flags of the World · דגלי העולם</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ff8a3d" />
+<title>Flagalogen · לומדים דגלים</title>
+
+<!-- PWA / add-to-home-screen -->
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Flagalogen" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,11 +21,10 @@
 
 <style>
   :root {
-    /* ---- Sunshine sticker-book palette ---- */
     --paper:      #fff3df;
     --paper-deep: #ffe7c2;
     --ink:        #3a2b52;
-    --ink-soft:   #8a7ba3;
+    --ink-soft:   #6d5f8c;
     --coral:      #ff5d6c;
     --coral-dk:   #e03e56;
     --tang:       #ff8a3d;
@@ -26,10 +34,13 @@
     --teal-dk:    #0a8a7f;
     --sky:        #47c2ec;
     --mat:        #fbfcff;
+    --turf:       #2aa15a;
+    --turf-dk:    #1f8449;
+    --board:      #23264a;
 
     --card-shadow: 0 22px 44px -18px rgba(58,43,82,.5), 0 6px 14px -8px rgba(58,43,82,.3);
-    --radius: 30px;
-    font-size: clamp(16px, 2.5vw, 21px);
+    --radius: 28px;
+    font-size: clamp(15px, 2.4vw, 21px);
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -40,165 +51,118 @@
     font-weight: 800;
     color: var(--ink);
     background: var(--paper);
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
     display: flex; flex-direction: column; align-items: center;
-    padding: clamp(14px, 3vw, 30px);
-    padding-bottom: max(clamp(14px, 3vw, 30px), env(safe-area-inset-bottom));
-    overflow-x: hidden;
+    padding: clamp(10px, 2.4vw, 26px);
+    padding-top: max(clamp(10px,2.4vw,26px), env(safe-area-inset-top));
+    padding-bottom: max(clamp(10px,2.4vw,26px), env(safe-area-inset-bottom));
     position: relative;
   }
 
-  /* ---- Atmospheric background: sun glow + dot grid + grain ---- */
+  /* ---- Atmospheric background ---- */
   .bg { position: fixed; inset: 0; z-index: -3; overflow: hidden; }
-  .bg::before {            /* warm sun glow, top-right */
-    content: ""; position: absolute; top: -22vmax; right: -14vmax;
-    width: 60vmax; height: 60vmax; border-radius: 50%;
-    background: radial-gradient(circle at center,
-      rgba(255,197,49,.9), rgba(255,138,61,.35) 45%, transparent 68%);
-    filter: blur(2px);
-  }
-  .bg::after {             /* cool glow, bottom-left */
-    content: ""; position: absolute; bottom: -24vmax; left: -16vmax;
-    width: 54vmax; height: 54vmax; border-radius: 50%;
-    background: radial-gradient(circle at center,
-      rgba(71,194,236,.5), rgba(16,179,163,.22) 48%, transparent 70%);
-  }
-  .dots {                  /* faint dotted paper texture */
-    position: fixed; inset: 0; z-index: -2; pointer-events: none;
-    background-image: radial-gradient(rgba(58,43,82,.09) 1.4px, transparent 1.4px);
-    background-size: 26px 26px;
-    -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
-            mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
-  }
-  .grain {                 /* subtle grain overlay */
-    position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .5;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
-  }
-  /* floating travel doodles */
-  .doodle { position: fixed; z-index: -1; font-size: 2.4rem; opacity: .5; filter: saturate(.9); animation: float 7s ease-in-out infinite; }
-  .doodle.d1 { top: 14%; left: 6%;  animation-delay: -1s; }
-  .doodle.d2 { top: 22%; right: 8%; animation-delay: -3s; font-size: 2rem;}
-  .doodle.d3 { bottom: 14%; left: 10%; animation-delay: -2s; font-size: 1.8rem;}
-  .doodle.d4 { bottom: 20%; right: 7%; animation-delay: -4.5s; }
-  @keyframes float { 0%,100%{transform:translateY(0) rotate(-4deg);} 50%{transform:translateY(-16px) rotate(5deg);} }
-  @media (max-width: 620px){ .doodle { display: none; } }
+  .bg::before { content: ""; position: absolute; top: -22vmax; right: -14vmax; width: 60vmax; height: 60vmax; border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(255,197,49,.9), rgba(255,138,61,.35) 45%, transparent 68%); }
+  .bg::after { content: ""; position: absolute; bottom: -24vmax; left: -16vmax; width: 54vmax; height: 54vmax; border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(71,194,236,.5), rgba(16,179,163,.22) 48%, transparent 70%); }
+  .dots { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background-image: radial-gradient(rgba(58,43,82,.09) 1.4px, transparent 1.4px); background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%); }
+  .doodle { position: fixed; z-index: -1; font-size: 2.2rem; opacity: .5; animation: float 7s ease-in-out infinite; }
+  .doodle.d1 { top: 15%; left: 5%; animation-delay: -1s; }
+  .doodle.d2 { top: 24%; right: 7%; animation-delay: -3s; font-size: 1.8rem; }
+  .doodle.d3 { bottom: 14%; left: 9%; animation-delay: -2s; font-size: 1.7rem; }
+  .doodle.d4 { bottom: 20%; right: 6%; animation-delay: -4.5s; }
+  @keyframes float { 0%,100%{transform:translateY(0) rotate(-4deg);} 50%{transform:translateY(-14px) rotate(5deg);} }
+  @media (max-width: 720px){ .doodle { display: none; } }
 
   h1 { margin: 0; }
 
   /* ---------- Header ---------- */
-  .top {
-    width: 100%; max-width: 760px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 14px; margin-bottom: clamp(8px, 2vh, 20px);
-    animation: drop .6s cubic-bezier(.2,.9,.3,1.2) both;
-  }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .globe { font-size: 2.4rem; animation: spin 14s linear infinite; transform-origin: 50% 55%; }
+  .top { width: 100%; max-width: 760px; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-bottom: clamp(6px, 1.6vh, 16px); animation: drop .6s cubic-bezier(.2,.9,.3,1.2) both; }
+  .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .globe { font-size: 2.2rem; animation: spin 16s linear infinite; transform-origin: 50% 55%; flex: 0 0 auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .brand-txt { font-family: "Fredoka", sans-serif; line-height: .98; }
-  .brand-txt b { font-size: 1.5rem; font-weight: 700; letter-spacing: .3px; display: block;
-    color: var(--ink); text-shadow: 2px 2px 0 rgba(255,197,49,.55); }
-  .brand-txt span { font-size: .82rem; color: var(--ink-soft); font-family: "Nunito"; font-weight: 800; }
+  .brand-txt { line-height: .98; min-width: 0; }
+  .brand-txt b { font-family: "Fredoka", sans-serif; font-size: 1.4rem; font-weight: 700; letter-spacing: .3px; display: block;
+    color: var(--ink); text-shadow: 2px 2px 0 rgba(255,197,49,.55); white-space: nowrap; }
+  .brand-txt span { font-size: .8rem; color: var(--ink-soft); font-weight: 800; }
 
-  .modes {
-    display: flex; gap: 6px; padding: 6px;
-    background: #fff; border-radius: 999px;
-    box-shadow: 0 5px 0 var(--paper-deep), 0 12px 22px -12px rgba(58,43,82,.4);
-  }
-  .modes button {
-    border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: .95rem;
-    padding: 11px 20px; border-radius: 999px; color: var(--ink-soft);
-    background: transparent; transition: transform .14s, color .14s, background .14s;
-    display: inline-flex; align-items: center; gap: .4em;
-  }
+  .modes { display: flex; gap: 5px; padding: 5px; background: #fff; border-radius: 999px; flex: 0 0 auto;
+    box-shadow: 0 5px 0 var(--paper-deep), 0 12px 22px -12px rgba(58,43,82,.4); }
+  .modes button { border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: .92rem;
+    padding: 10px 16px; border-radius: 999px; color: var(--ink-soft); background: transparent;
+    transition: transform .14s, color .14s, background .14s; display: inline-flex; align-items: center; gap: .35em; }
   .modes button.active { color: #fff; background: linear-gradient(180deg, var(--coral), var(--coral-dk)); box-shadow: 0 4px 0 var(--coral-dk); }
   .modes button:not(.active):hover { color: var(--ink); background: var(--paper); }
   .modes button:active { transform: scale(.93); }
 
-  /* ---------- Stage ---------- */
-  .stage {
-    flex: 1; width: 100%; max-width: 760px;
-    display: flex; align-items: center; justify-content: center;
-    padding: clamp(8px, 2vh, 22px) 0;
-  }
-  .screen { width: 100%; display: none; }
-  .screen.show { display: block; animation: pop .45s cubic-bezier(.2,.9,.3,1.35); }
-  @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(14px);} to { opacity: 1; transform: none; } }
+  /* ---------- Stage / no-scroll flex ---------- */
+  .stage { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 760px; display: flex; padding-top: 12px; }
+  .screen { display: none; width: 100%; min-height: 0; }
+  .screen.show { display: flex; flex-direction: column; justify-content: center; animation: pop .45s cubic-bezier(.2,.9,.3,1.35); }
+  @keyframes pop { from { opacity: 0; transform: scale(.94) translateY(12px);} to { opacity: 1; transform: none; } }
   @keyframes drop { from { opacity: 0; transform: translateY(-16px);} to { opacity: 1; transform: none; } }
 
-  .card {
-    position: relative;
-    background: #fff;
-    border-radius: var(--radius);
-    box-shadow: var(--card-shadow);
-    padding: clamp(20px, 4vw, 38px) clamp(18px, 4vw, 40px) clamp(22px, 4vw, 34px);
-    text-align: center;
-    border: 3px solid #fff;
-  }
-  /* washi-tape accent at the top of the card */
-  .card::before {
-    content: ""; position: absolute; top: -15px; left: 50%; transform: translateX(-50%) rotate(-2.5deg);
-    width: 128px; height: 30px; border-radius: 4px;
+  .card { position: relative; background: #fff; border-radius: var(--radius); box-shadow: var(--card-shadow);
+    padding: clamp(16px, 2.4vh, 30px) clamp(16px, 4vw, 38px) clamp(16px, 2.2vh, 26px); text-align: center;
+    border: 3px solid #fff; display: flex; flex-direction: column; min-height: 0; max-height: 100%; }
+  .card::before { content: ""; position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(-2.5deg);
+    width: 122px; height: 28px; border-radius: 4px;
     background: repeating-linear-gradient(45deg, rgba(255,138,61,.85) 0 10px, rgba(255,197,49,.85) 10px 20px);
-    box-shadow: 0 3px 8px rgba(58,43,82,.18);
-    opacity: .92;
-  }
+    box-shadow: 0 3px 8px rgba(58,43,82,.18); opacity: .92; }
 
   /* ---------- Names ---------- */
-  .names { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 6px; }
-  .name {
-    display: inline-flex; align-items: center; gap: .45em; cursor: pointer;
-    border: 0; background: transparent; font: inherit; color: inherit;
-    padding: 6px 18px; border-radius: 18px; max-width: 100%;
-    transition: transform .14s, background .16s, box-shadow .16s;
-  }
-  .name:hover { background: #fff5e2; }
-  .name:active { transform: scale(.95); }
+  .names { display: flex; flex-direction: column; align-items: center; gap: 9px; flex: 0 0 auto; }
+  .name { display: inline-flex; align-items: center; gap: .5em; cursor: pointer; border: 0; font: inherit; color: inherit;
+    padding: 6px 8px 6px 18px; border-radius: 999px; max-width: 100%;
+    background: #fff2df; box-shadow: 0 3px 0 var(--paper-deep);
+    transition: transform .12s, box-shadow .12s, background .16s; }
+  .name-he { direction: rtl; padding: 6px 18px 6px 8px; background: #e7f7f4; box-shadow: 0 3px 0 #c9ece7; }
+  .name:hover { background: #ffe7c4; }
+  .name-he:hover { background: #d6f1ec; }
+  .name:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--paper-deep); }
+  .name-he:active { box-shadow: 0 1px 0 #c9ece7; }
   .name .txt { font-family: "Fredoka", sans-serif; font-weight: 600; }
-  .name-en .txt { font-size: clamp(1.7rem, 6.5vw, 2.7rem); color: var(--ink); }
-  .name-he { direction: rtl; }
-  .name-he .txt { font-size: clamp(1.45rem, 5.6vw, 2.15rem); color: var(--teal-dk); }
-
-  /* animated speaker icon */
-  .spk { width: 1.15em; height: 1.15em; flex: 0 0 auto; color: var(--tang); opacity: .65; transition: opacity .15s, transform .15s; }
-  .name:hover .spk { opacity: 1; transform: scale(1.08); }
-  .spk .wave { transform-origin: 6px 12px; }
+  .name-en .txt { font-size: clamp(1.45rem, 4.8vw, 2.4rem); color: var(--ink); }
+  .name-he .txt { font-size: clamp(1.25rem, 4.2vw, 1.95rem); color: var(--teal-dk); }
+  /* filled circular "play audio" badge — the clear tap-to-hear affordance */
+  .spk { width: 1.7em; height: 1.7em; flex: 0 0 auto; padding: .36em; border-radius: 50%;
+    background: var(--tang); color: #fff; box-shadow: 0 3px 7px rgba(255,138,61,.5); opacity: 1;
+    animation: spkHint 1.1s ease-in-out 3; transition: transform .15s; }
+  .name-he .spk { background: var(--teal); box-shadow: 0 3px 7px rgba(16,179,163,.45); }
+  .name:hover .spk { transform: scale(1.1); }
   .name.speaking { background: #fff2cf; }
-  .name.speaking .spk { color: var(--coral); opacity: 1; }
+  .name.speaking .spk { animation: spkHint .7s ease-in-out infinite; }
   .name.speaking .w1 { animation: pulse .7s ease-in-out infinite; }
   .name.speaking .w2 { animation: pulse .7s ease-in-out .18s infinite; }
-  @keyframes pulse { 0%,100%{ opacity:.25; } 50%{ opacity:1; } }
+  @keyframes pulse { 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
+  @keyframes spkHint { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.14);} }
 
-  /* ---------- Flag (shown WHOLE on a photo-mat) ---------- */
-  .flag-wrap {
-    position: relative; margin: clamp(16px, 3vh, 26px) auto clamp(10px,2vh,16px);
-    width: min(80vw, 460px); aspect-ratio: 3 / 2;
-    background: var(--mat); border-radius: 20px; padding: 14px;
+  /* ---------- Flag ---------- */
+  .flag-wrap { position: relative; align-self: center; flex: 0 1 auto; min-height: 0;
+    width: min(74vw, 420px, 62vh); aspect-ratio: 3 / 2;
+    margin: clamp(10px,1.8vh,20px) auto clamp(8px,1.4vh,14px);
+    background: var(--mat); border-radius: 18px; padding: 12px;
     box-shadow: inset 0 0 0 2px rgba(58,43,82,.06), 0 14px 26px -14px rgba(58,43,82,.45);
-    transform: rotate(-1.3deg); transition: transform .3s cubic-bezier(.2,.9,.3,1.2);
-  }
+    transform: rotate(-1.3deg); transition: transform .3s cubic-bezier(.2,.9,.3,1.2); }
   .flag-wrap:hover { transform: rotate(0deg) scale(1.02); }
-  .flag-wrap img {
-    width: 100%; height: 100%; object-fit: contain; display: block;
-    border-radius: 8px; box-shadow: 0 3px 10px rgba(58,43,82,.22), 0 0 0 1px rgba(58,43,82,.1);
-    background:#fff;
-  }
+  .flag-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 7px;
+    box-shadow: 0 3px 10px rgba(58,43,82,.22), 0 0 0 1px rgba(58,43,82,.1); background:#fff; }
   .flag-swap { animation: swap .5s cubic-bezier(.2,.9,.3,1.3); }
-  @keyframes swap { 0%{ opacity:0; transform: rotate(-1.3deg) translateY(18px) scale(.94);} 100%{ opacity:1; } }
+  @keyframes swap { 0%{ opacity:0; transform: rotate(-1.3deg) translateY(16px) scale(.94);} 100%{ opacity:1; } }
 
-  .hint { color: var(--ink-soft); font-weight: 800; font-size: .8rem; margin: 2px 0 clamp(14px,2vh,20px); }
+  .hint { color: var(--ink-soft); font-weight: 800; font-size: .78rem; margin: 0 0 clamp(10px,1.6vh,16px); flex: 0 0 auto; }
 
   /* ---------- Controls ---------- */
-  .controls { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
-  .btn {
-    border: 0; cursor: pointer; font: inherit; font-weight: 900; font-size: 1rem;
-    border-radius: 20px; padding: 15px 24px; color: #fff;
-    display: inline-flex; align-items: center; gap: .5em;
-    transition: transform .09s, box-shadow .09s, filter .15s;
-  }
+  .controls { display: flex; align-items: center; justify-content: center; gap: 11px; flex-wrap: wrap; flex: 0 0 auto; }
+  .btn { border: 0; cursor: pointer; font: inherit; font-weight: 900; font-size: .98rem; border-radius: 18px; padding: 13px 22px;
+    color: #fff; display: inline-flex; align-items: center; gap: .5em; transition: transform .09s, box-shadow .09s, filter .15s; }
   .btn:active { transform: translateY(5px); }
-  .btn.primary { background: linear-gradient(180deg, var(--sun), var(--sun-dk)); color: var(--ink);
-    font-family:"Fredoka"; font-size: 1.25rem; padding: 16px 34px; box-shadow: 0 7px 0 var(--sun-dk); }
+  .btn.primary { background: linear-gradient(180deg, var(--sun), var(--sun-dk)); color: var(--ink); font-family:"Fredoka"; font-size: 1.2rem; padding: 14px 30px; box-shadow: 0 7px 0 var(--sun-dk); }
   .btn.primary:active { box-shadow: 0 2px 0 var(--sun-dk); }
   .btn.teal { background: linear-gradient(180deg, var(--teal), var(--teal-dk)); box-shadow: 0 6px 0 var(--teal-dk); }
   .btn.teal:active { box-shadow: 0 1px 0 var(--teal-dk); }
@@ -207,51 +171,25 @@
   .btn:disabled { opacity: .4; cursor: default; box-shadow: none !important; transform: none; }
   .btn:not(:disabled):hover { filter: brightness(1.04); }
 
-  .counter {
-    display: inline-flex; align-items:center; gap:.4em;
-    margin-top: clamp(14px,2vh,18px); padding: 7px 16px; border-radius: 999px;
-    background: var(--paper); color: var(--ink-soft); font-weight: 900; font-size: .82rem;
-  }
-
-  /* ---------- Mobile ---------- */
-  @media (max-width: 520px) {
-    :root { --radius: 24px; }
-    .top { margin-bottom: 4px; gap: 10px; }
-    .globe { font-size: 1.9rem; }
-    .brand-txt b { font-size: 1.15rem; text-shadow: 1.5px 1.5px 0 rgba(255,197,49,.55); }
-    .brand-txt span { font-size: .68rem; }
-    .modes button { padding: 10px 15px; font-size: .82rem; }
-    .card { padding: 26px 16px 20px; }
-    /* tidy the control buttons: two equal on top, Next full-width below */
-    .controls { gap: 10px; }
-    .controls .btn { flex: 1 1 0; justify-content: center; }
-    .controls .btn.primary { flex: 1 1 100%; }
-  }
+  .counter { display: inline-flex; align-items:center; gap:.4em; margin-top: clamp(10px,1.6vh,16px); padding: 6px 15px; border-radius: 999px;
+    background: var(--paper); color: var(--ink-soft); font-weight: 900; font-size: .8rem; align-self: center; flex: 0 0 auto; }
 
   /* ---------- Quiz ---------- */
-  .scorebar { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; animation: drop .5s both; }
-  .stat {
-    display:inline-flex; align-items:center; gap:.45em; background:#fff;
-    padding: 9px 18px; border-radius: 999px; font-weight: 900; color: var(--ink);
-    box-shadow: 0 5px 0 var(--paper-deep);
-  }
-  .stat b { font-family:"Fredoka"; font-size: 1.3em; line-height: 1; }
+  .scorebar { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex: 0 0 auto; animation: drop .5s both; }
+  .stat { display:inline-flex; align-items:center; gap:.4em; background:#fff; padding: 8px 16px; border-radius: 999px; font-weight: 900; color: var(--ink); box-shadow: 0 5px 0 var(--paper-deep); font-size: .9rem; }
+  .stat b { font-family:"Fredoka"; font-size: 1.25em; line-height: 1; }
   .stat.streak b { color: var(--coral); }
   .stat.score b { color: var(--tang); }
 
-  .quiz-q { font-family:"Fredoka"; font-weight: 600; font-size: 1.35rem; margin: 2px 0 0; }
-  .quiz-q small { display:block; color: var(--ink-soft); font-size: .82rem; font-family:"Nunito"; font-weight:800; direction: rtl; }
+  .quiz-q { font-family:"Fredoka"; font-weight: 600; font-size: 1.25rem; margin: 0; flex: 0 0 auto; }
+  .quiz-q small { display:block; color: var(--ink-soft); font-size: .8rem; font-family:"Nunito"; font-weight:800; direction: rtl; }
 
-  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 4px; }
-  @media (max-width: 480px){ .choices { grid-template-columns: 1fr; } }
-  .choice {
-    border: 0; cursor: pointer; font: inherit; font-weight: 800; text-align: center;
-    background: #fff; color: var(--ink); border-radius: 20px; padding: 15px 12px;
-    box-shadow: 0 6px 0 var(--paper-deep); line-height: 1.15;
-    transition: transform .09s, box-shadow .12s, background .18s;
-  }
-  .choice .en { font-family:"Fredoka"; font-weight: 600; font-size: 1.12rem; }
-  .choice .he { display:block; color: var(--ink-soft); font-size: .92rem; direction: rtl; margin-top: 2px; font-weight: 800; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 4px; flex: 0 0 auto; }
+  .choice { border: 0; cursor: pointer; font: inherit; font-weight: 800; text-align: center; background: #fff; color: var(--ink);
+    border-radius: 18px; padding: 13px 10px; box-shadow: 0 6px 0 var(--paper-deep); line-height: 1.12;
+    transition: transform .09s, box-shadow .12s, background .18s; }
+  .choice .en { font-family:"Fredoka"; font-weight: 600; font-size: 1.08rem; }
+  .choice .he { display:block; color: var(--ink-soft); font-size: .88rem; direction: rtl; margin-top: 1px; font-weight: 800; }
   .choice:not([disabled]):hover { transform: translateY(-2px); background:#fffaf0; }
   .choice:not([disabled]):active { transform: translateY(4px); box-shadow: 0 2px 0 var(--paper-deep); }
   .choice.correct { background: linear-gradient(180deg, #2ecf9b, var(--teal-dk)); color:#fff; box-shadow: 0 6px 0 var(--teal-dk); animation: bounceIn .5s; }
@@ -261,59 +199,121 @@
   @keyframes bounceIn { 0%{transform:scale(.9);} 50%{transform:scale(1.06);} 100%{transform:scale(1);} }
   @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(7px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(5px);} }
 
-  .feedback { min-height: 1.5em; font-family:"Fredoka"; font-weight:600; font-size: 1.2rem; margin-top: 14px; }
+  .feedback { min-height: 1.4em; font-family:"Fredoka"; font-weight:600; font-size: 1.12rem; margin-top: 12px; flex: 0 0 auto; }
   .feedback.good { color: var(--teal-dk); }
   .feedback.bad  { color: var(--coral-dk); }
+  .feedback.hintline { color: var(--ink-soft); font-family: "Nunito"; font-weight: 800; font-size: .82rem; opacity: .9; }
+
+  /* ---------- Match (sports) ---------- */
+  .scoreboard { display: flex; align-items: center; justify-content: center; gap: 14px; flex: 0 0 auto; margin-bottom: 12px;
+    background: linear-gradient(180deg, #2b2f5a, var(--board)); color: #fff; border-radius: 16px; padding: 10px 18px;
+    box-shadow: 0 8px 0 #171936, 0 16px 26px -14px rgba(0,0,0,.5); font-family: "Fredoka"; }
+  .sb-side { font-weight: 600; font-size: .95rem; letter-spacing: .5px; display: inline-flex; align-items: center; gap: .3em; opacity: .95; }
+  .sb-score { display: inline-flex; align-items: center; gap: 8px; background: #12142c; border-radius: 10px; padding: 3px 12px; box-shadow: inset 0 2px 6px rgba(0,0,0,.5); }
+  .sb-score b { font-size: 1.5rem; color: var(--sun); text-shadow: 0 0 10px rgba(255,197,49,.6); min-width: .8em; }
+  .sb-score i { color: #6b6f9c; font-style: normal; }
+
+  .match-card { padding-top: clamp(14px,2vh,22px); }
+  .pitch { position: relative; flex: 0 1 auto; min-height: 0; display: flex; align-items: stretch; justify-content: center; gap: clamp(8px,2vw,20px);
+    background:
+      repeating-linear-gradient(90deg, var(--turf) 0 26px, var(--turf-dk) 26px 52px);
+    border-radius: 16px; padding: clamp(12px,2vh,20px) clamp(10px,2vw,18px);
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), inset 0 0 40px rgba(0,0,0,.18); }
+  .pitch::before { content:""; position:absolute; left:50%; top:8%; bottom:8%; width:3px; transform:translateX(-50%); background:rgba(255,255,255,.55); }
+  .team { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1 1 0; min-width: 0; }
+  .team .flag-wrap { transform: rotate(0deg); width: 100%; max-width: 220px; margin: 0; background:#fff; padding: 8px; border-radius: 12px; cursor: pointer; border: 0; font: inherit; -webkit-appearance: none; appearance: none; display: block; }
+  .team .flag-wrap:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+  .team .flag-wrap:hover { transform: scale(1.02); }
+  .team .flag-wrap.speaking { animation: flagSpeak .5s ease; }
+  @keyframes flagSpeak { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.05);} }
+  .flag-spk { position: absolute; top: -9px; inset-inline-start: -9px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--teal); color: #fff; display: grid; place-items: center; z-index: 4; pointer-events: none;
+    box-shadow: 0 3px 7px rgba(16,179,163,.5), 0 0 0 3px #fff; animation: spkHint 1.1s ease-in-out 3; }
+  .flag-spk svg { width: 16px; height: 16px; }
+  .jersey { font-weight: 900; font-size: .72rem; color: #fff; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .team-choices { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 230px; }
+  .mchoice { border:0; cursor:pointer; font:inherit; font-weight:800; font-size:.9rem; color: var(--ink); background:#fff;
+    border-radius: 12px; padding: 9px 8px; box-shadow: 0 4px 0 rgba(0,0,0,.18); line-height:1.05; transition: transform .08s, box-shadow .1s, background .15s; }
+  .mchoice .he { display:block; font-size:.78rem; color: var(--ink-soft); direction:rtl; font-weight:800; }
+  .mchoice:not([disabled]):hover { transform: translateY(-2px); }
+  .mchoice:not([disabled]):active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+  .mchoice.correct { background: linear-gradient(180deg,#2ecf9b,var(--teal-dk)); color:#fff; box-shadow:0 4px 0 var(--teal-dk); }
+  .mchoice.correct .he { color: rgba(255,255,255,.9); }
+  .mchoice.wrong { background: linear-gradient(180deg,var(--coral),var(--coral-dk)); color:#fff; box-shadow:0 4px 0 var(--coral-dk); }
+  .mchoice.wrong .he { color: rgba(255,255,255,.9); }
+  .vs { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(-6deg); z-index: 3;
+    width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center;
+    background: #fff; color: var(--coral); font-family:"Fredoka"; font-weight: 700; font-size: 1.15rem;
+    box-shadow: 0 0 0 4px var(--coral), 0 8px 16px rgba(0,0,0,.35); }
+  @media (max-width: 420px){ .vs { width: 44px; height: 44px; font-size: .95rem; box-shadow: 0 0 0 3px var(--coral), 0 6px 12px rgba(0,0,0,.35); } }
 
   #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
-  .footnote { color: var(--ink-soft); font-size: .72rem; margin: 8px 0 0; text-align:center; font-weight:800; opacity:.85; }
+  .footnote { flex: 0 0 auto; color: var(--ink-soft); font-size: .68rem; margin: 4px 0 0; text-align:center; font-weight:800; opacity:.85; min-height: 0; }
+  .credit { flex: 0 0 auto; margin: 3px 0 0; text-align: center; font-size: .66rem; font-weight: 800; letter-spacing: .3px; color: var(--ink-soft); opacity: .6; }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 520px) {
+    :root { --radius: 22px; }
+    .top { flex-direction: column; align-items: center; gap: 8px; }
+    .globe { font-size: 1.7rem; }
+    .brand { width: 100%; justify-content: center; }
+    .brand-txt b { font-size: 1.2rem; text-shadow: 1.5px 1.5px 0 rgba(255,197,49,.55); }
+    .brand-txt span { font-size: .68rem; }
+    .modes { width: 100%; gap: 4px; padding: 4px; }
+    .modes button { flex: 1 1 0; justify-content: center; padding: 10px 8px; font-size: .82rem; }
+    .card { padding: 22px 14px 16px; }
+    .controls { gap: 9px; }
+    .controls .btn { flex: 1 1 0; justify-content: center; }
+    .controls .btn.primary { flex: 1 1 100%; }
+    .scoreboard { gap: 9px; padding: 8px 12px; }
+    .sb-side { font-size: .82rem; }
+    .team .flag-wrap { padding: 6px; }
+    .mchoice { font-size: .84rem; padding: 8px 6px; }
+  }
+  @media (max-width: 380px){
+    .modes button .lbl { display: none; }
+    .modes button { padding: 9px 12px; font-size: 1rem; }
+  }
+  /* very short / landscape viewports: allow scrolling so controls stay reachable */
+  @media (max-height: 560px){
+    body { overflow: auto; }
+    .stage { padding-top: 6px; }
+  }
 </style>
 </head>
 <body>
-  <div class="bg"></div><div class="dots"></div><div class="grain"></div>
-  <div class="doodle d1">✈️</div><div class="doodle d2">🧭</div>
-  <div class="doodle d3">⭐</div><div class="doodle d4">☁️</div>
+  <div class="bg"></div><div class="dots"></div>
+  <div class="doodle d1">✈️</div><div class="doodle d2">🧭</div><div class="doodle d3">⭐</div><div class="doodle d4">☁️</div>
 
   <header class="top">
     <div class="brand">
       <div class="globe">🌍</div>
       <div class="brand-txt">
-        <b>Flags of the World</b>
-        <span>דגלי העולם · בואו נלמד דגלים</span>
+        <b>Flagalogen</b>
+        <span>לומדים דגלים</span>
       </div>
     </div>
-    <nav class="modes" role="tablist">
-      <button id="tabLearn" class="active" aria-selected="true">📚 Learn</button>
-      <button id="tabPlay" aria-selected="false">🎮 Play</button>
+    <nav class="modes" role="tablist" aria-label="Game modes">
+      <button id="tabLearn" role="tab" class="active" aria-selected="true" aria-controls="learn">📚<span class="lbl">&nbsp;Learn</span></button>
+      <button id="tabPlay" role="tab" aria-selected="false" aria-controls="play">🎮<span class="lbl">&nbsp;Play</span></button>
+      <button id="tabMatch" role="tab" aria-selected="false" aria-controls="match">⚽<span class="lbl">&nbsp;Match</span></button>
     </nav>
   </header>
 
   <main class="stage">
     <!-- LEARN -->
-    <section id="learn" class="screen show">
+    <section id="learn" class="screen show" role="tabpanel" aria-label="Learn flags">
       <div class="card">
         <div class="names">
-          <button class="name name-en" id="learnEn">
-            <span class="txt"></span>
-            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/>
-              <path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+          <button class="name name-en" id="learnEn"><span class="txt"></span>
+            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
-          <button class="name name-he" id="learnHe" dir="rtl">
-            <span class="txt"></span>
-            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/>
-              <path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+          <button class="name name-he" id="learnHe" dir="rtl"><span class="txt"></span>
+            <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
-
         <div class="flag-wrap"><img id="learnFlag" alt="flag" /></div>
         <div class="hint">👆 Tap a name to hear it · לחצו על שם כדי לשמוע</div>
-
         <div class="controls">
           <button class="btn ghost" id="prevBtn">⬅️ Back</button>
           <button class="btn teal" id="shuffleBtn">🔀 Mix</button>
@@ -324,7 +324,7 @@
     </section>
 
     <!-- PLAY -->
-    <section id="play" class="screen">
+    <section id="play" class="screen" role="tabpanel" aria-label="Flag quiz">
       <div class="scorebar">
         <span class="stat score">⭐ Score <b id="score">0</b></span>
         <span class="stat streak">🔥 Streak <b id="streak">0</b></span>
@@ -334,21 +334,46 @@
         <div class="flag-wrap"><img id="quizFlag" alt="mystery flag" /></div>
         <div class="choices" id="choices"></div>
         <div class="feedback" id="feedback"></div>
-        <div class="controls">
-          <button class="btn primary" id="quizNext" style="display:none;">Next flag ➡️</button>
+        <div class="controls"><button class="btn primary" id="quizNext" style="display:none;">Next flag ➡️</button></div>
+      </div>
+    </section>
+
+    <!-- MATCH -->
+    <section id="match" class="screen" role="tabpanel" aria-label="Flag match-up">
+      <div class="scoreboard">
+        <span class="sb-side">🏠 HOME</span>
+        <span class="sb-score"><b id="goalsH">0</b><i>:</i><b id="goalsA">0</b></span>
+        <span class="sb-side">AWAY ✈️</span>
+      </div>
+      <div class="card match-card">
+        <div class="quiz-q">Name both teams!<small>נחשו את שתי הקבוצות</small></div>
+        <div class="pitch">
+          <div class="team">
+            <div class="jersey">🏠 HOME</div>
+            <button type="button" class="flag-wrap" id="wrapH" title="Tap to hear it in Hebrew" aria-label="Hear the home team's name in Hebrew"><img id="flagH" alt="home flag" /><span class="flag-spk"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></button>
+            <div class="team-choices" id="choicesH"></div>
+          </div>
+          <div class="vs">VS</div>
+          <div class="team">
+            <div class="jersey">AWAY ✈️</div>
+            <button type="button" class="flag-wrap" id="wrapA" title="Tap to hear it in Hebrew" aria-label="Hear the away team's name in Hebrew"><img id="flagA" alt="away flag" /><span class="flag-spk"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></button>
+            <div class="team-choices" id="choicesA"></div>
+          </div>
         </div>
+        <div class="feedback" id="matchFeedback"></div>
+        <div class="controls"><button class="btn primary" id="matchNext" style="display:none;">Next match 🏁</button></div>
       </div>
     </section>
   </main>
 
   <p class="footnote" id="voiceNote"></p>
+  <p class="credit">Brought to you by Uri &amp; Ellie Adam Glanz</p>
   <canvas id="confetti"></canvas>
 
 <script>
 (() => {
   "use strict";
 
-  // ---- Curated kid-friendly set (ISO 3166-1 alpha-2) ----
   const CODES = [
     "US","CA","MX","BR","AR","CL","CO","PE","JM","CU",
     "GB","FR","DE","IT","ES","PT","NL","BE","CH","SE",
@@ -358,15 +383,11 @@
     "CN","JP","KR","IN","TH","VN","ID","PH",
     "AU","NZ"
   ];
-
   const enNames = new Intl.DisplayNames(["en"], { type: "region" });
   const heNames = new Intl.DisplayNames(["he"], { type: "region" });
-
   const COUNTRIES = CODES.map(code => ({
-    code,
-    en: enNames.of(code),
-    he: heNames.of(code),
-    flag:   `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
+    code, en: enNames.of(code), he: heNames.of(code),
+    flag: `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
     flag2x: `https://flagcdn.com/w1280/${code.toLowerCase()}.png`
   })).filter(c => c.en && c.en !== c.code);
 
@@ -383,7 +404,6 @@
     else note.textContent = "";
   }
   if (synth) { pickVoices(); synth.onvoiceschanged = pickVoices; }
-
   let lastBtn = null;
   function speak(text, lang, btn) {
     if (!synth || !text) return;
@@ -394,31 +414,25 @@
     if (v) u.voice = v;
     u.rate = 0.9; u.pitch = 1.06;
     if (lastBtn) lastBtn.classList.remove("speaking");
-    if (btn) {
-      btn.classList.add("speaking"); lastBtn = btn;
-      u.onend = u.onerror = () => btn.classList.remove("speaking");
-    }
+    if (btn) { btn.classList.add("speaking"); lastBtn = btn; u.onend = u.onerror = () => btn.classList.remove("speaking"); }
     synth.speak(u);
   }
 
   const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
   const swapAnim = img => { img.classList.remove("flag-swap"); void img.offsetWidth; img.classList.add("flag-swap"); };
+  const setFlag = (img, c) => { img.src = c.flag; img.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`; img.alt = `Flag of ${c.en}`; swapAnim(img); };
+  const distractors = (answerIdx, n) => shuffle(COUNTRIES.map((_,i)=>i).filter(i=>i!==answerIdx)).slice(0, n);
 
-  // ---------- Learn mode ----------
+  // ---------- Learn ----------
   const order = COUNTRIES.map((_, i) => i);
   let pos = 0;
-  const learnEn = document.getElementById("learnEn");
-  const learnHe = document.getElementById("learnHe");
-  const learnFlag = document.getElementById("learnFlag");
-  const learnCounter = document.getElementById("learnCounter");
-
+  const learnEn = document.getElementById("learnEn"), learnHe = document.getElementById("learnHe");
+  const learnFlag = document.getElementById("learnFlag"), learnCounter = document.getElementById("learnCounter");
   function renderLearn(animate) {
     const c = COUNTRIES[order[pos]];
     learnEn.querySelector(".txt").textContent = c.en;
     learnHe.querySelector(".txt").textContent = c.he;
-    learnFlag.src = c.flag;
-    learnFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`;
-    learnFlag.alt = `Flag of ${c.en}`;
+    learnFlag.src = c.flag; learnFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`; learnFlag.alt = `Flag of ${c.en}`;
     learnCounter.textContent = `${pos + 1} / ${COUNTRIES.length}`;
     document.getElementById("prevBtn").disabled = pos === 0;
     if (animate) swapAnim(learnFlag);
@@ -429,78 +443,126 @@
   document.getElementById("prevBtn").onclick = () => { if (pos>0){ pos--; renderLearn(true); } };
   document.getElementById("shuffleBtn").onclick = () => { shuffle(order); pos = 0; renderLearn(true); };
 
-  // ---------- Play mode ----------
-  const quizFlag = document.getElementById("quizFlag");
-  const choicesEl = document.getElementById("choices");
-  const feedbackEl = document.getElementById("feedback");
-  const quizNext = document.getElementById("quizNext");
-  const scoreEl = document.getElementById("score");
-  const streakEl = document.getElementById("streak");
+  // ---------- Play ----------
+  const quizFlag = document.getElementById("quizFlag"), choicesEl = document.getElementById("choices");
+  const feedbackEl = document.getElementById("feedback"), quizNext = document.getElementById("quizNext");
+  const scoreEl = document.getElementById("score"), streakEl = document.getElementById("streak");
   let score = 0, streak = 0, answer = null, locked = false;
   const CHEERS = ["🎉 Yay!", "🌟 Awesome!", "👏 Great job!", "🥳 Correct!", "🚀 Nailed it!"];
-
   function newQuestion() {
-    locked = false;
-    feedbackEl.textContent = ""; feedbackEl.className = "feedback";
-    quizNext.style.display = "none";
-    const pool = shuffle(COUNTRIES.map((_, i) => i));
-    answer = pool[0];
-    const opts = shuffle([answer, ...pool.slice(1, 4)]);
-    const c = COUNTRIES[answer];
-    quizFlag.src = c.flag; quizFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`;
-    quizFlag.alt = "Mystery flag"; swapAnim(quizFlag);
+    locked = false; feedbackEl.textContent = ""; feedbackEl.className = "feedback"; quizNext.style.display = "none";
+    answer = Math.floor(Math.random()*COUNTRIES.length);
+    const opts = shuffle([answer, ...distractors(answer, 3)]);
+    setFlag(quizFlag, COUNTRIES[answer]); quizFlag.alt = "Mystery flag";
     choicesEl.innerHTML = "";
     opts.forEach(idx => {
       const o = COUNTRIES[idx];
       const b = document.createElement("button");
-      b.className = "choice";
-      b.dataset.idx = idx;
+      b.className = "choice"; b.dataset.idx = idx;
       b.innerHTML = `<span class="en">${o.en}</span><span class="he" dir="rtl">${o.he}</span>`;
-      b.onclick = () => choose(idx, b, c);
+      b.onclick = () => choose(idx, b);
       choicesEl.appendChild(b);
     });
   }
-
-  function choose(idx, btn, correct) {
-    if (locked) return;
-    locked = true;
-    const buttons = [...choicesEl.children];
-    buttons.forEach(b => b.disabled = true);
+  function choose(idx, btn) {
+    if (locked) return; locked = true;
+    const c = COUNTRIES[answer];
+    [...choicesEl.children].forEach(b => b.disabled = true);
     if (idx === answer) {
-      btn.classList.add("correct");
-      score++; streak++;
-      feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + correct.en;
-      feedbackEl.className = "feedback good";
-      speak(correct.en, "en-US"); burst();
+      btn.classList.add("correct"); score++; streak++;
+      feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + c.en;
+      feedbackEl.className = "feedback good"; speak(c.en, "en-US"); burst();
     } else {
       btn.classList.add("wrong");
-      buttons.find(b => +b.dataset.idx === answer)?.classList.add("correct");
-      streak = 0;
-      feedbackEl.textContent = "It's " + correct.en + " · " + correct.he;
-      feedbackEl.className = "feedback bad";
-      speak(correct.en, "en-US");
+      [...choicesEl.children].find(b => +b.dataset.idx === answer)?.classList.add("correct");
+      streak = 0; feedbackEl.textContent = "It's " + c.en + " · " + c.he; feedbackEl.className = "feedback bad"; speak(c.en, "en-US");
     }
-    scoreEl.textContent = score; streakEl.textContent = streak;
-    quizNext.style.display = "";
+    scoreEl.textContent = score; streakEl.textContent = streak; quizNext.style.display = "";
   }
   quizNext.onclick = newQuestion;
 
+  // ---------- Match ----------
+  const flagH = document.getElementById("flagH"), flagA = document.getElementById("flagA");
+  const wrapH = document.getElementById("wrapH"), wrapA = document.getElementById("wrapA");
+  const choicesH = document.getElementById("choicesH"), choicesA = document.getElementById("choicesA");
+  const goalsHEl = document.getElementById("goalsH"), goalsAEl = document.getElementById("goalsA");
+  const matchFeedback = document.getElementById("matchFeedback"), matchNext = document.getElementById("matchNext");
+  let mAns = { H: null, A: null }, mDone = { H: false, A: false };
+
+  function buildTeam(side, imgEl, choicesBox) {
+    const ans = Math.floor(Math.random()*COUNTRIES.length);
+    mAns[side] = ans; mDone[side] = false;
+    setFlag(imgEl, COUNTRIES[ans]);
+    const opts = shuffle([ans, ...distractors(ans, 2)]);
+    choicesBox.innerHTML = "";
+    opts.forEach(idx => {
+      const o = COUNTRIES[idx];
+      const b = document.createElement("button");
+      b.className = "mchoice"; b.dataset.idx = idx;
+      b.innerHTML = `${o.en}<span class="he" dir="rtl">${o.he}</span>`;
+      b.onclick = () => matchChoose(side, idx, b, choicesBox);
+      choicesBox.appendChild(b);
+    });
+  }
+  function newMatch() {
+    matchFeedback.textContent = "👆 Tap a flag to hear it in Hebrew · לחצו על דגל";
+    matchFeedback.className = "feedback hintline"; matchNext.style.display = "none";
+    goalsHEl.textContent = "0"; goalsAEl.textContent = "0";
+    // avoid the two teams being identical
+    buildTeam("H", flagH, choicesH);
+    do { buildTeam("A", flagA, choicesA); } while (mAns.A === mAns.H);
+  }
+  function speakFlagHe(side) {
+    const idx = mAns[side]; if (idx == null) return;
+    const wrap = side === "H" ? wrapH : wrapA;
+    wrap.classList.remove("speaking"); void wrap.offsetWidth; wrap.classList.add("speaking");
+    speak(COUNTRIES[idx].he, "he-IL");
+  }
+  wrapH.onclick = () => speakFlagHe("H");
+  wrapA.onclick = () => speakFlagHe("A");
+  function matchChoose(side, idx, btn, box) {
+    if (mDone[side]) return; mDone[side] = true;
+    const ans = mAns[side], c = COUNTRIES[ans];
+    [...box.children].forEach(b => b.disabled = true);
+    if (idx === ans) {
+      btn.classList.add("correct");
+      (side === "H" ? goalsHEl : goalsAEl).textContent = "1";
+      burst();
+    } else {
+      btn.classList.add("wrong");
+      [...box.children].find(b => +b.dataset.idx === ans)?.classList.add("correct");
+    }
+    speak(c.en, "en-US");
+    if (mDone.H && mDone.A) fullTime();
+  }
+  function fullTime() {
+    const h = goalsHEl.textContent === "1", a = goalsAEl.textContent === "1";
+    const n = (h?1:0) + (a?1:0);
+    matchFeedback.textContent = n === 2 ? "🏆 Full time — you named both!"
+      : n === 1 ? "🙌 Full time — one right!"
+      : "📣 Full time — try the next match!";
+    matchFeedback.className = "feedback " + (n ? "good" : "bad");
+    matchNext.style.display = "";
+  }
+  matchNext.onclick = newMatch;
+
   // ---------- Tabs ----------
-  const tabLearn = document.getElementById("tabLearn");
-  const tabPlay = document.getElementById("tabPlay");
+  const tabs = { learn: "tabLearn", play: "tabPlay", match: "tabMatch" };
+  let quizInit = false, matchInit = false;
   function setMode(mode) {
     if (synth) synth.cancel();
-    const learning = mode === "learn";
-    tabLearn.classList.toggle("active", learning);
-    tabPlay.classList.toggle("active", !learning);
-    tabLearn.setAttribute("aria-selected", learning);
-    tabPlay.setAttribute("aria-selected", !learning);
-    document.getElementById("learn").classList.toggle("show", learning);
-    document.getElementById("play").classList.toggle("show", !learning);
-    if (!learning && answer === null) newQuestion();
+    Object.entries(tabs).forEach(([m, id]) => {
+      const on = m === mode;
+      const el = document.getElementById(id);
+      el.classList.toggle("active", on); el.setAttribute("aria-selected", on);
+      document.getElementById(m).classList.toggle("show", on);
+    });
+    if (mode === "play" && !quizInit) { quizInit = true; newQuestion(); }
+    if (mode === "match" && !matchInit) { matchInit = true; newMatch(); }
   }
-  tabLearn.onclick = () => setMode("learn");
-  tabPlay.onclick = () => setMode("play");
+  document.getElementById("tabLearn").onclick = () => setMode("learn");
+  document.getElementById("tabPlay").onclick = () => setMode("play");
+  document.getElementById("tabMatch").onclick = () => setMode("match");
 
   // ---------- Confetti ----------
   const cv = document.getElementById("confetti"), ctx = cv.getContext("2d");
@@ -509,26 +571,26 @@
   resize(); addEventListener("resize", resize);
   const COLORS = ["#ffc531","#ff8a3d","#ff5d6c","#10b3a3","#47c2ec","#8a63d2"];
   function burst() {
+    const running = parts.length > 0;
     const cx = innerWidth/2, cy = innerHeight*0.42;
-    for (let i=0;i<120;i++) parts.push({
-      x:cx, y:cy, vx:(Math.random()-.5)*16, vy:(Math.random()-1)*15-3,
-      g:.34+Math.random()*.22, r:5+Math.random()*8, c:COLORS[(Math.random()*COLORS.length)|0],
-      rot:Math.random()*6, vr:(Math.random()-.5)*.5, life:100
-    });
-    requestAnimationFrame(tick);
+    for (let i=0;i<110;i++) parts.push({ x:cx, y:cy, vx:(Math.random()-.5)*16, vy:(Math.random()-1)*15-3,
+      g:.34+Math.random()*.22, r:5+Math.random()*8, c:COLORS[(Math.random()*COLORS.length)|0], rot:Math.random()*6, vr:(Math.random()-.5)*.5, life:100 });
+    if (!running) requestAnimationFrame(tick);
   }
   function tick() {
     ctx.clearRect(0,0,cv.width,cv.height);
     parts = parts.filter(p => p.life-- > 0 && p.y < cv.height+50);
-    parts.forEach(p => {
-      p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.rot+=p.vr;
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.62); ctx.restore();
-    });
+    parts.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.rot+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.62); ctx.restore(); });
     if (parts.length) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height);
   }
 
   renderLearn(false);
+
+  // ---------- PWA service worker ----------
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
 })();
 </script>
 </body>
