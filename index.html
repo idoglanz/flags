@@ -100,6 +100,19 @@
   .modes button:not(.active):hover { color: var(--ink); background: var(--paper); }
   .modes button:active { transform: scale(.93); }
 
+  /* ---------- Countries pool toggle ---------- */
+  .pool-toggle { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: clamp(4px, 1vh, 10px); animation: drop .6s cubic-bezier(.2,.9,.3,1.2) both; }
+  .pool-label { font-size: .8rem; font-weight: 900; color: var(--ink-soft); }
+  .pool-seg { display: flex; gap: 3px; padding: 3px; background: #fff; border-radius: 999px;
+    box-shadow: 0 3px 0 var(--paper-deep); }
+  .pool-btn { border: 0; cursor: pointer; font: inherit; font-weight: 800; font-size: .8rem;
+    padding: 6px 14px; border-radius: 999px; color: var(--ink-soft); background: transparent;
+    transition: transform .12s, color .14s, background .14s; }
+  .pool-btn.active { color: #fff; background: linear-gradient(180deg, var(--teal), var(--teal-dk)); box-shadow: 0 3px 0 var(--teal-dk); }
+  .pool-btn:not(.active):hover { color: var(--ink); background: var(--paper); }
+  .pool-btn:active { transform: scale(.94); }
+
   /* ---------- Stage / no-scroll flex ---------- */
   .stage { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 760px; display: flex; padding-top: 12px; }
   .screen { display: none; width: 100%; min-height: 0; }
@@ -300,6 +313,14 @@
     </nav>
   </header>
 
+  <div class="pool-toggle">
+    <span class="pool-label">🌐 Countries</span>
+    <span class="pool-seg" role="group" aria-label="How many countries to practice">
+      <button id="poolMain" class="pool-btn active" aria-pressed="true">⭐ Main</button>
+      <button id="poolAll" class="pool-btn" aria-pressed="false">🌍 All</button>
+    </span>
+  </div>
+
   <main class="stage">
     <!-- LEARN -->
     <section id="learn" class="screen show" role="tabpanel" aria-label="Learn flags">
@@ -374,8 +395,18 @@
 (() => {
   "use strict";
 
-  // All ~195 sovereign countries (193 UN members + Vatican + Palestine), ISO 3166-1 alpha-2.
-  const CODES = [
+  // "Main" = a curated, recognizable starter set for young kids.
+  const MAIN_CODES = [
+    "US","CA","MX","BR","AR","CL","CO","PE","JM","CU",
+    "GB","FR","DE","IT","ES","PT","NL","BE","CH","SE",
+    "NO","DK","FI","IE","GR","PL","AT","UA","RU",
+    "IL","EG","TR","SA","AE","MA",
+    "ZA","KE","NG","ET",
+    "CN","JP","KR","IN","TH","VN","ID","PH",
+    "AU","NZ"
+  ];
+  // "All" = all ~195 sovereign countries (193 UN members + Vatican + Palestine).
+  const ALL_CODES = [
     "AF","AL","DZ","AD","AO","AG","AR","AM","AU","AT","AZ","BS","BH","BD","BB","BY",
     "BE","BZ","BJ","BT","BO","BA","BW","BR","BN","BG","BF","BI","CV","KH","CM","CA",
     "CF","TD","CL","CN","CO","KM","CG","CD","CR","CI","HR","CU","CY","CZ","DK","DJ",
@@ -392,12 +423,16 @@
   ];
   const enNames = new Intl.DisplayNames(["en"], { type: "region" });
   const heNames = new Intl.DisplayNames(["he"], { type: "region" });
-  const COUNTRIES = CODES.map(code => ({
+  const buildCountries = (codes) => codes.map(code => ({
     code, en: enNames.of(code), he: heNames.of(code),
     flag: `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
     flag2x: `https://flagcdn.com/w1280/${code.toLowerCase()}.png`
   })).filter(c => c.en && c.he && c.en !== c.code && c.he !== c.code)
      .sort((a, b) => a.en.localeCompare(b.en)); // alphabetical for tidy Learn browsing
+
+  let activePool = "main";
+  try { const s = localStorage.getItem("flagPool"); if (s === "all" || s === "main") activePool = s; } catch (e) {}
+  let COUNTRIES = buildCountries(activePool === "all" ? ALL_CODES : MAIN_CODES);
 
   // ---------- Speech ----------
   const synth = window.speechSynthesis;
@@ -432,7 +467,7 @@
   const distractors = (answerIdx, n) => shuffle(COUNTRIES.map((_,i)=>i).filter(i=>i!==answerIdx)).slice(0, n);
 
   // ---------- Learn ----------
-  const order = COUNTRIES.map((_, i) => i);
+  let order = COUNTRIES.map((_, i) => i);
   let pos = 0;
   const learnEn = document.getElementById("learnEn"), learnHe = document.getElementById("learnHe");
   const learnFlag = document.getElementById("learnFlag"), learnCounter = document.getElementById("learnCounter");
@@ -571,6 +606,29 @@
   document.getElementById("tabLearn").onclick = () => setMode("learn");
   document.getElementById("tabPlay").onclick = () => setMode("play");
   document.getElementById("tabMatch").onclick = () => setMode("match");
+
+  // ---------- Countries pool (Main / All) ----------
+  const poolMain = document.getElementById("poolMain"), poolAll = document.getElementById("poolAll");
+  function syncPoolUI() {
+    const main = activePool === "main";
+    poolMain.classList.toggle("active", main); poolAll.classList.toggle("active", !main);
+    poolMain.setAttribute("aria-pressed", main); poolAll.setAttribute("aria-pressed", !main);
+  }
+  function setPool(pool) {
+    if (pool === activePool) return;
+    activePool = pool;
+    try { localStorage.setItem("flagPool", pool); } catch (e) {}
+    syncPoolUI();
+    if (synth) synth.cancel();
+    COUNTRIES = buildCountries(pool === "all" ? ALL_CODES : MAIN_CODES);
+    order = COUNTRIES.map((_, i) => i); pos = 0; renderLearn(true);
+    // regenerate the games for the new pool
+    if (document.getElementById("play").classList.contains("show")) newQuestion(); else quizInit = false;
+    if (document.getElementById("match").classList.contains("show")) newMatch(); else matchInit = false;
+  }
+  poolMain.onclick = () => setPool("main");
+  poolAll.onclick = () => setPool("all");
+  syncPoolUI();
 
   // ---------- Confetti ----------
   const cv = document.getElementById("confetti"), ctx = cv.getContext("2d");
