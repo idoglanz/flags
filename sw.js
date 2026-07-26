@@ -1,5 +1,5 @@
 // Simple offline-first service worker for the Flags app.
-const CACHE = "flags-v2";
+const CACHE = "flags-v3";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-180.png", "./icon-192.png", "./icon-512.png"

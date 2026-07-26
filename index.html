@@ -100,8 +100,8 @@
   .modes button:not(.active):hover { color: var(--ink); background: var(--paper); }
   .modes button:active { transform: scale(.93); }
 
-  /* ---------- Countries pool toggle ---------- */
-  .pool-toggle { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;
+  /* ---------- Countries pool toggle + guess toggle ---------- */
+  .pool-toggle, .guess-toggle { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px;
     margin-bottom: clamp(4px, 1vh, 10px); animation: drop .6s cubic-bezier(.2,.9,.3,1.2) both; }
   .pool-label { font-size: .8rem; font-weight: 900; color: var(--ink-soft); }
   .pool-seg { display: flex; gap: 3px; padding: 3px; background: #fff; border-radius: 999px;
@@ -112,6 +112,21 @@
   .pool-btn.active { color: #fff; background: linear-gradient(180deg, var(--teal), var(--teal-dk)); box-shadow: 0 3px 0 var(--teal-dk); }
   .pool-btn:not(.active):hover { color: var(--ink); background: var(--paper); }
   .pool-btn:active { transform: scale(.94); }
+
+  /* ---------- Continent chip (Learn) ---------- */
+  .conti-chip { display: inline-flex; align-items: center; gap: .5em; align-self: center; flex: 0 0 auto;
+    margin: 0 auto clamp(8px,1.4vh,14px); padding: 5px 8px 5px 14px; border: 0; cursor: pointer; font: inherit;
+    background: #e7f7f4; border-radius: 999px; box-shadow: 0 3px 0 #c9ece7;
+    transition: transform .12s, box-shadow .12s, background .16s; }
+  .conti-chip:hover { background: #d6f1ec; }
+  .conti-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 #c9ece7; }
+  .conti-chip:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+  .conti-emoji { font-size: 1.2rem; }
+  .conti-txt { font-family: "Fredoka"; font-weight: 600; font-size: .98rem; color: var(--teal-dk); }
+  .conti-chip .spk { background: var(--teal); box-shadow: 0 2px 6px rgba(16,179,163,.45); }
+  .conti-chip.speaking { background: #d6f1ec; }
+  .conti-chip.speaking .w1 { animation: pulse .7s ease-in-out infinite; }
+  .conti-chip.speaking .w2 { animation: pulse .7s ease-in-out .18s infinite; }
 
   /* ---------- Stage / no-scroll flex ---------- */
   .stage { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 760px; display: flex; padding-top: 12px; }
@@ -342,6 +357,11 @@
           </button>
         </div>
         <div class="flag-wrap"><img id="learnFlag" alt="flag" /></div>
+        <button type="button" class="conti-chip" id="learnConti" title="Tap to hear the continent in Hebrew">
+          <span class="conti-emoji"></span>
+          <span class="conti-txt"><span class="conti-en"></span> · <span class="conti-he" dir="rtl"></span></span>
+          <svg class="spk" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path class="wave w1" d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="wave w2" d="M17.8 6.6a7.5 7.5 0 010 10.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
         <div class="hint">👆 Tap a name to hear it · לחצו על שם כדי לשמוע</div>
         <div class="controls">
           <button class="btn ghost" id="prevBtn">⬅️ Back</button>
@@ -354,12 +374,19 @@
 
     <!-- PLAY -->
     <section id="play" class="screen" role="tabpanel" aria-label="Flag quiz">
+      <div class="guess-toggle">
+        <span class="pool-label">🎯 Guess</span>
+        <span class="pool-seg" role="group" aria-label="What to guess">
+          <button id="guessCountry" class="pool-btn active" aria-pressed="true">🏳️ Country</button>
+          <button id="guessContinent" class="pool-btn" aria-pressed="false">🗺️ Continent</button>
+        </span>
+      </div>
       <div class="scorebar">
         <span class="stat score">⭐ Score <b id="score">0</b></span>
         <span class="stat streak">🔥 Streak <b id="streak">0</b></span>
       </div>
       <div class="card">
-        <div class="quiz-q">Which country is this?<small>איזו מדינה זו?</small></div>
+        <div class="quiz-q" id="quizQ">Which country is this?<small>איזו מדינה זו?</small></div>
         <button type="button" class="flag-wrap tappable" id="quizWrap" title="Tap to hear it in Hebrew" aria-label="Hear the country's name in Hebrew"><img id="quizFlag" alt="mystery flag" /><span class="flag-spk"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z" fill="currentColor"/><path d="M15.2 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span></button>
         <div class="choices" id="choices"></div>
         <div class="feedback" id="feedback"></div>
@@ -429,10 +456,21 @@
     "TT","TN","TR","TM","TV","UG","UA","AE","GB","US","UY","UZ","VU","VA","VE","VN",
     "YE","ZM","ZW"
   ];
+  // Continent per country (standard geographic grouping; Americas split N/S for kids).
+  const CONTINENT = {AF:"asia",AL:"europe",DZ:"africa",AD:"europe",AO:"africa",AG:"north_america",AR:"south_america",AM:"asia",AU:"oceania",AT:"europe",AZ:"asia",BS:"north_america",BH:"asia",BD:"asia",BB:"north_america",BY:"europe",BE:"europe",BZ:"north_america",BJ:"africa",BT:"asia",BO:"south_america",BA:"europe",BW:"africa",BR:"south_america",BN:"asia",BG:"europe",BF:"africa",BI:"africa",CV:"africa",KH:"asia",CM:"africa",CA:"north_america",CF:"africa",TD:"africa",CL:"south_america",CN:"asia",CO:"south_america",KM:"africa",CG:"africa",CD:"africa",CR:"north_america",CI:"africa",HR:"europe",CU:"north_america",CY:"europe",CZ:"europe",DK:"europe",DJ:"africa",DM:"north_america",DO:"north_america",EC:"south_america",EG:"africa",SV:"north_america",GQ:"africa",ER:"africa",EE:"europe",SZ:"africa",ET:"africa",FJ:"oceania",FI:"europe",FR:"europe",GA:"africa",GM:"africa",GE:"asia",DE:"europe",GH:"africa",GR:"europe",GD:"north_america",GT:"north_america",GN:"africa",GW:"africa",GY:"south_america",HT:"north_america",HN:"north_america",HU:"europe",IS:"europe",IN:"asia",ID:"asia",IR:"asia",IQ:"asia",IE:"europe",IL:"asia",IT:"europe",JM:"north_america",JP:"asia",JO:"asia",KZ:"asia",KE:"africa",KI:"oceania",KP:"asia",KR:"asia",KW:"asia",KG:"asia",LA:"asia",LV:"europe",LB:"asia",LS:"africa",LR:"africa",LY:"africa",LI:"europe",LT:"europe",LU:"europe",MG:"africa",MW:"africa",MY:"asia",MV:"asia",ML:"africa",MT:"europe",MH:"oceania",MR:"africa",MU:"africa",MX:"north_america",FM:"oceania",MD:"europe",MC:"europe",MN:"asia",ME:"europe",MA:"africa",MZ:"africa",MM:"asia",NA:"africa",NR:"oceania",NP:"asia",NL:"europe",NZ:"oceania",NI:"north_america",NE:"africa",NG:"africa",MK:"europe",NO:"europe",OM:"asia",PK:"asia",PW:"oceania",PS:"asia",PA:"north_america",PG:"oceania",PY:"south_america",PE:"south_america",PH:"asia",PL:"europe",PT:"europe",QA:"asia",RO:"europe",RU:"europe",RW:"africa",KN:"north_america",LC:"north_america",VC:"north_america",WS:"oceania",SM:"europe",ST:"africa",SA:"asia",SN:"africa",RS:"europe",SC:"africa",SL:"africa",SG:"asia",SK:"europe",SI:"europe",SB:"oceania",SO:"africa",ZA:"africa",SS:"africa",ES:"europe",LK:"asia",SD:"africa",SR:"south_america",SE:"europe",CH:"europe",SY:"asia",TJ:"asia",TZ:"africa",TH:"asia",TL:"asia",TG:"africa",TO:"oceania",TT:"north_america",TN:"africa",TR:"asia",TM:"asia",TV:"oceania",UG:"africa",UA:"europe",AE:"asia",GB:"europe",US:"north_america",UY:"south_america",UZ:"asia",VU:"oceania",VA:"europe",VE:"south_america",VN:"asia",YE:"asia",ZM:"africa",ZW:"africa"};
+  const CONTINENTS = {
+    africa:        { en: "Africa",        he: "אפריקה",      emoji: "🌍" },
+    asia:          { en: "Asia",          he: "אסיה",        emoji: "🌏" },
+    europe:        { en: "Europe",        he: "אירופה",      emoji: "🌍" },
+    north_america: { en: "North America", he: "צפון אמריקה", emoji: "🌎" },
+    south_america: { en: "South America", he: "דרום אמריקה", emoji: "🌎" },
+    oceania:       { en: "Oceania",       he: "אוקיאניה",    emoji: "🌏" }
+  };
+
   const enNames = new Intl.DisplayNames(["en"], { type: "region" });
   const heNames = new Intl.DisplayNames(["he"], { type: "region" });
   const buildCountries = (codes) => codes.map(code => ({
-    code, en: enNames.of(code), he: heNames.of(code),
+    code, en: enNames.of(code), he: heNames.of(code), cont: CONTINENT[code],
     flag: `https://flagcdn.com/w640/${code.toLowerCase()}.png`,
     flag2x: `https://flagcdn.com/w1280/${code.toLowerCase()}.png`
   })).filter(c => c.en && c.he && c.en !== c.code && c.he !== c.code)
@@ -479,24 +517,30 @@
   let pos = 0;
   const learnEn = document.getElementById("learnEn"), learnHe = document.getElementById("learnHe");
   const learnFlag = document.getElementById("learnFlag"), learnCounter = document.getElementById("learnCounter");
+  const learnConti = document.getElementById("learnConti");
   function renderLearn(animate) {
     const c = COUNTRIES[order[pos]];
     learnEn.querySelector(".txt").textContent = c.en;
     learnHe.querySelector(".txt").textContent = c.he;
     learnFlag.src = c.flag; learnFlag.srcset = `${c.flag} 640w, ${c.flag2x} 1280w`; learnFlag.alt = `Flag of ${c.en}`;
+    const ct = CONTINENTS[c.cont];
+    learnConti.querySelector(".conti-emoji").textContent = ct.emoji;
+    learnConti.querySelector(".conti-en").textContent = ct.en;
+    learnConti.querySelector(".conti-he").textContent = ct.he;
     learnCounter.textContent = `${pos + 1} / ${COUNTRIES.length}`;
     document.getElementById("prevBtn").disabled = pos === 0;
     if (animate) swapAnim(learnFlag);
   }
   learnEn.onclick = () => speak(COUNTRIES[order[pos]].en, "en-US", learnEn);
   learnHe.onclick = () => speak(COUNTRIES[order[pos]].he, "he-IL", learnHe);
+  learnConti.onclick = () => speak(CONTINENTS[COUNTRIES[order[pos]].cont].he, "he-IL", learnConti);
   document.getElementById("nextBtn").onclick = () => { pos = (pos+1)%COUNTRIES.length; renderLearn(true); };
   document.getElementById("prevBtn").onclick = () => { if (pos>0){ pos--; renderLearn(true); } };
   document.getElementById("shuffleBtn").onclick = () => { shuffle(order); pos = 0; renderLearn(true); };
 
   // ---------- Play ----------
   const quizFlag = document.getElementById("quizFlag"), choicesEl = document.getElementById("choices");
-  const quizWrap = document.getElementById("quizWrap");
+  const quizWrap = document.getElementById("quizWrap"), quizQ = document.getElementById("quizQ");
   const feedbackEl = document.getElementById("feedback"), quizNext = document.getElementById("quizNext");
   quizWrap.onclick = () => {
     if (answer == null) return;
@@ -504,39 +548,65 @@
     speak(COUNTRIES[answer].he, "he-IL");
   };
   const scoreEl = document.getElementById("score"), streakEl = document.getElementById("streak");
-  let score = 0, streak = 0, answer = null, locked = false;
+  let score = 0, streak = 0, answer = null, locked = false, guessMode = "country";
   const CHEERS = ["🎉 Yay!", "🌟 Awesome!", "👏 Great job!", "🥳 Correct!", "🚀 Nailed it!"];
+
   function newQuestion() {
     locked = false; feedbackEl.textContent = ""; feedbackEl.className = "feedback"; quizNext.style.display = "none";
     answer = Math.floor(Math.random()*COUNTRIES.length);
-    const opts = shuffle([answer, ...distractors(answer, 3)]);
     setFlag(quizFlag, COUNTRIES[answer]); quizFlag.alt = "Mystery flag";
+    quizQ.innerHTML = guessMode === "continent"
+      ? 'Which continent?<small>באיזו יבשת?</small>'
+      : 'Which country is this?<small>איזו מדינה זו?</small>';
+    let opts; // [{ en, he, emoji?, correct }]
+    if (guessMode === "continent") {
+      const right = COUNTRIES[answer].cont;
+      const others = shuffle(Object.keys(CONTINENTS).filter(k => k !== right)).slice(0, 3);
+      opts = shuffle([right, ...others]).map(k => ({ en: CONTINENTS[k].en, he: CONTINENTS[k].he, emoji: CONTINENTS[k].emoji, correct: k === right }));
+    } else {
+      opts = shuffle([answer, ...distractors(answer, 3)]).map(i => ({ en: COUNTRIES[i].en, he: COUNTRIES[i].he, correct: i === answer }));
+    }
     choicesEl.innerHTML = "";
-    opts.forEach(idx => {
-      const o = COUNTRIES[idx];
+    opts.forEach(o => {
       const b = document.createElement("button");
-      b.className = "choice"; b.dataset.idx = idx;
-      b.innerHTML = `<span class="en">${o.en}</span><span class="he" dir="rtl">${o.he}</span>`;
-      b.onclick = () => choose(idx, b);
+      b.className = "choice"; b.dataset.correct = o.correct ? "1" : "0";
+      b.innerHTML = `<span class="en">${o.emoji ? o.emoji + " " : ""}${o.en}</span><span class="he" dir="rtl">${o.he}</span>`;
+      b.onclick = () => choose(o, b);
       choicesEl.appendChild(b);
     });
   }
-  function choose(idx, btn) {
+
+  function choose(opt, btn) {
     if (locked) return; locked = true;
-    const c = COUNTRIES[answer];
     [...choicesEl.children].forEach(b => b.disabled = true);
-    if (idx === answer) {
+    const c = COUNTRIES[answer];
+    const right = guessMode === "continent" ? CONTINENTS[c.cont] : { en: c.en, he: c.he };
+    if (opt.correct) {
       btn.classList.add("correct"); score++; streak++;
-      feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + c.en;
-      feedbackEl.className = "feedback good pop"; speak(c.he, "he-IL"); celebrate();
+      feedbackEl.textContent = CHEERS[Math.floor(Math.random()*CHEERS.length)] + " " + right.en;
+      feedbackEl.className = "feedback good pop"; speak(right.he, "he-IL"); celebrate();
     } else {
       btn.classList.add("wrong");
-      [...choicesEl.children].find(b => +b.dataset.idx === answer)?.classList.add("correct");
-      streak = 0; feedbackEl.textContent = "It's " + c.en + " · " + c.he; feedbackEl.className = "feedback bad"; speak(c.he, "he-IL");
+      [...choicesEl.children].find(b => b.dataset.correct === "1")?.classList.add("correct");
+      streak = 0; feedbackEl.textContent = "It's " + right.en + " · " + right.he; feedbackEl.className = "feedback bad"; speak(right.he, "he-IL");
     }
     scoreEl.textContent = score; streakEl.textContent = streak; quizNext.style.display = "";
   }
   quizNext.onclick = newQuestion;
+
+  // guess-mode toggle (Country / Continent)
+  const guessCountry = document.getElementById("guessCountry"), guessContinent = document.getElementById("guessContinent");
+  function setGuess(mode) {
+    if (mode === guessMode) return;
+    guessMode = mode;
+    const isC = mode === "country";
+    guessCountry.classList.toggle("active", isC); guessContinent.classList.toggle("active", !isC);
+    guessCountry.setAttribute("aria-pressed", isC); guessContinent.setAttribute("aria-pressed", !isC);
+    if (synth) synth.cancel();
+    newQuestion();
+  }
+  guessCountry.onclick = () => setGuess("country");
+  guessContinent.onclick = () => setGuess("continent");
 
   // ---------- Match ----------
   const flagH = document.getElementById("flagH"), flagA = document.getElementById("flagA");
